@@ -47,6 +47,8 @@ def process_file(file: File) -> Match:
         ]
     )
 
+    file.delete()
+
     match = read_new_match(
         json.loads(
             result.text.replace('```json', '').replace(
