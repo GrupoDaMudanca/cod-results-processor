@@ -166,3 +166,6 @@ cython_debug/
 results/*
 processed/*
 .env.development
+
+!processed/latest.csv
+
