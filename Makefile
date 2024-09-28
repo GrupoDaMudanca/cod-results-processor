@@ -16,4 +16,4 @@ process-results:
 
 .PHONY: shell
 shell:
-	@docker compose run --rm ${SERVICE_NAME} bash
+	@docker compose run --user=$(shell id -u) --rm ${SERVICE_NAME} bash
