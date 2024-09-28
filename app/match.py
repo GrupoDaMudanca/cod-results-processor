@@ -2,7 +2,7 @@ import hashlib
 import json
 
 from abc import ABC
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from app.player import Player
 from app.serializable import Serializable
@@ -44,9 +44,9 @@ class Match(Serializable, ABC):
     def __init__(
         self,
         record1: MatchRecord,
-        record2: MatchRecord,
-        record3: MatchRecord,
-        record4: MatchRecord
+        record2: Optional[MatchRecord] = None,
+        record3: Optional[MatchRecord] = None,
+        record4: Optional[MatchRecord] = None
     ):
         self.record1 = record1
         self.record2 = record2
@@ -80,12 +80,14 @@ class Match(Serializable, ABC):
 
     @property
     def records(self) -> List[MatchRecord]:
-        return [
+        records = [
             self.record1,
             self.record2,
             self.record3,
-            self.record4
+            self.record4,
         ]
+
+        return [record for record in records if record]
 
     def to_dict(
         self,
