@@ -2,7 +2,7 @@
 import csv
 
 from app.match import Match, MatchRecord
-from config import OUTPUT_FILES_PATH
+from config import OUTPUT_FILE_PATH
 
 
 def read_new_match(match_data: dict) -> Match:
@@ -12,7 +12,7 @@ def read_new_match(match_data: dict) -> Match:
 def write_matches(matches: list[Match]) -> None:
     header = ['match_id', 'player_id', 'player_name', 'score', 'kills', 'damage', 'redeploys', 'objectives']
 
-    with open(OUTPUT_FILES_PATH, mode='w', newline='', encoding='utf-8') as file:
+    with open(OUTPUT_FILE_PATH, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=header)
 
         writer.writeheader()
