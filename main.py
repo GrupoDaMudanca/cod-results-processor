@@ -48,9 +48,11 @@ def process_file(file):
 
 
 def process_files(root_path):
+    full_base_path = os.path.join(os.getcwd(), root_path)
+
     paths = [
-        path for path in
-        os.listdir(os.path.join(os.getcwd(), root_path))
+        os.path.join(full_base_path, path) for path in
+        os.listdir(full_base_path)
         if RESULT_FILETYPE in path
     ]
 
