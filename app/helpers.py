@@ -1,8 +1,16 @@
 
 import csv
+import os
 
 from app.match import Match, MatchRecord
-from config import OUTPUT_FILE_PATH
+from config import OUTPUT_FILES_PATH, TEMP_OUTPUT_FILE_PATH
+
+
+def file_valid(file_path):
+    if not os.path.exists(file_path) or os.stat(file_path).st_size == 0:
+        return True
+
+    return False
 
 
 def read_new_match(match_data: dict) -> Match:
@@ -12,7 +20,12 @@ def read_new_match(match_data: dict) -> Match:
 def write_matches(matches: list[Match]) -> None:
     header = ['match_id', 'player_id', 'player_name', 'score', 'kills', 'damage', 'redeploys', 'objectives']
 
-    with open(OUTPUT_FILE_PATH, mode='w', newline='', encoding='utf-8') as file:
+    with open(
+        TEMP_OUTPUT_FILE_PATH,
+        mode='w',
+        newline='',
+        encoding='utf-8'
+    ) as file:
         writer = csv.DictWriter(file, fieldnames=header)
 
         writer.writeheader()

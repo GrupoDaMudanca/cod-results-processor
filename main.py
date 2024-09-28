@@ -49,12 +49,11 @@ def process_file(file: File) -> Match:
 
     file.delete()
 
-    match = read_new_match(
-        json.loads(
-            result.text.replace('```json', '').replace(
-                '```', '').replace('\n', '').replace(' ', '')
-        )
-    )
+    result_text = result.text.replace('```json', '').replace('```', '').replace('\n', '').replace(' ', '')
+
+    print(result_text)
+
+    match = read_new_match(json.loads(result_text))
 
     return match
 
