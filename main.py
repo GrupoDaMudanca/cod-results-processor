@@ -63,7 +63,7 @@ def process_files(root_path: str) -> List[Match]:
     paths = [
         os.path.join(full_base_path, path) for path in
         os.listdir(full_base_path)
-        if RESULT_FILETYPES in path
+        if any(filetype in path for filetype in RESULT_FILETYPES)
     ]
 
     return [process_file(file) for file in upload_files(paths)]
