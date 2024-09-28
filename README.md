@@ -11,16 +11,29 @@ The `CoD Result Processor` is a tool designed to process and analyze results fro
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/engine/install/)
+- [Generated Gemini API key](https://ai.google.dev/gemini-api/docs/api-key)
 
 ## Setup
 
-- Build the Docker image:
+1. Copy the example environment file:
+
+```bash
+cp .env.development.example .env.development
+```
+
+2. Insert your previously [Generated Gemini API key](https://ai.google.dev/gemini-api/docs/api-key) into your environment file:
+
+```bash
+sed -i '' 's/^GEMINI_API_KEY=.*/GEMINI_API_KEY={{YOUR_API_KEY}}/' .env.development
+```
+
+3. Build the Docker image:
 
     ```bash
     make build
     ```
 
-- To build without using the cache:
+    To build without using the cache:
 
     ```bash
     make build-no-cache
