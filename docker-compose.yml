@@ -1,0 +1,13 @@
+---
+version: '3.6'
+services:
+  cod-result-processor:
+    build:
+      context: .
+    image: cod-result-processor:development
+    env_file:
+      - .env.development
+    container_name: cod-result-processor
+    restart: unless-stopped
+    volumes:
+      - .:/app

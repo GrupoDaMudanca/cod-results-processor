@@ -3,9 +3,10 @@ import json
 
 import google.generativeai as genai
 
-GEMINI_API_KEY = ''
-GEMINI_DESIRED_MODEL = 'gemini-1.5-flash'
-RESULT_FILETYPE = '.jpeg'
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+GEMINI_DESIRED_MODEL = os.environ.get('GEMINI_DESIRED_MODEL')
+RESULT_FILETYPE = os.environ.get('RESULT_FILETYPE')
+RESULT_FILES_PATH = os.environ.get('RESULT_FILES_PATH')
 
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel(GEMINI_DESIRED_MODEL)
@@ -56,4 +57,4 @@ def process_files(root_path):
     return [process_file(file) for file in upload_files(paths)]
 
 
-print(process_files(''))
+print(process_files(RESULT_FILES_PATH))
