@@ -1,0 +1,47 @@
+name: Push 'latest.csv' to public repo
+
+on:
+  push:
+    paths:
+      - 'processed/latest.csv'
+
+jobs:
+  commit-latest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        path: 'src'
+        ref: 'master'
+        persist-credentials: false
+
+    - name: Checkout destination repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        path: 'dest'
+        ref: 'master'
+        repository: 'GrupoDaMudanca/cod-results'
+        persist-credentials: false
+        token: ${{ secrets.PUSH_COD_RESULTS_TOKEN }}
+
+    - name: Set up Git user for the action
+      run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+    - name: Copy the latest.csv file to the target repository
+      shell: bash
+      run: |
+        cp src/processed/latest.csv dest/latest.csv
+
+    - name: Commit and push changes to the target repository
+      shell: bash
+      working-directory: dest
+      run: |
+        git add latest.csv
+        git commit -m "Update data $(date -u '+%Y-%m-%d %T') UTC"
+        git push
