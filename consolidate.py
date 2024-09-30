@@ -32,4 +32,4 @@ if paths:
 
     print(f'Data consolidated and saved to {LATEST_OUTPUT_FILE_PATH}')
 else:
-    print("No new files found in the specified directory.")
+    print("No new files found to consolidate")

@@ -70,4 +70,9 @@ def process_files(root_path: str) -> List[Match]:
     return [process_file(file) for file in upload_files(paths)]
 
 
-write_matches(process_files(RESULT_FILES_PATH))
+matches = process_files(RESULT_FILES_PATH)
+
+if matches:
+    write_matches(matches)
+else:
+    print('There were no new matches to process')
