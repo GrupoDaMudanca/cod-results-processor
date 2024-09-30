@@ -11,22 +11,19 @@ jobs:
 
     steps:
     - name: Checkout source repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         path: 'src'
         ref: 'master'
-        persist-credentials: false
 
     - name: Checkout destination repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
-        fetch-depth: 0
         path: 'dest'
         ref: 'master'
         repository: 'GrupoDaMudanca/cod-results'
-        persist-credentials: false
-        token: ${{ secrets.PUSH_COD_RESULTS_TOKEN }}
+        ssh-key: ${{ secrets.PUSH_COD_SSH_KEY }}
 
     - name: Set up Git user for the action
       run: |
