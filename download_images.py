@@ -43,6 +43,7 @@ def get_updates(
     return [
         update for update in updates.get('result')
         if (not chat_id or update.get('message').get('chat').get('id') == chat_id)
+        and update.get('message')
         and is_message_photo(update.get('message'))
     ]
 
