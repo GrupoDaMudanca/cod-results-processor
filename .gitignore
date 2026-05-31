@@ -167,5 +167,3 @@ results/*
 processed/*
 .env.development
 
-!processed/latest.csv
-

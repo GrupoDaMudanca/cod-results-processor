@@ -2,6 +2,15 @@
 
 SERVICE_NAME=cod-result-processor
 
+# You can override these variables when calling make.
+# Example: make push REGISTRY=docker.io/youruser IMAGE_TAG=v1.0
+REGISTRY ?= your_dockerhub_username
+IMAGE_TAG ?= latest
+IMAGE_ARCH ?= linux/amd64
+
+# If REGISTRY is set, prefix the image name. Otherwise, use just the service name.
+FULL_IMAGE_NAME = $(if $(REGISTRY),$(REGISTRY)/$(SERVICE_NAME):$(IMAGE_TAG),$(SERVICE_NAME):$(IMAGE_TAG))
+
 .PHONY: up
 up:
 	@docker compose up
@@ -36,3 +45,8 @@ clean-results:
 .PHONY: shell
 shell:
 	@docker compose run --rm ${SERVICE_NAME} bash
+
+.PHONY: push
+push:
+	@docker build --platform ${IMAGE_ARCH} --pull -t ${FULL_IMAGE_NAME} .
+	@docker push ${FULL_IMAGE_NAME}

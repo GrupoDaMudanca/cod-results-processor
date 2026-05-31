@@ -98,7 +98,7 @@ def process_file(image_path: str, date: str = None) -> Match:
 
     result_text = result.text
 
-    logger.debug(result_text)
+    logger.info(f"AI identified stats:\n{result_text}")
 
     match_data = json.loads(result_text)
 
@@ -138,6 +138,7 @@ def process_files(root_path: str) -> List[Match]:
             match = process_file(image_path, date=date_str)
         except Exception as e:
             err_str = str(e)
+            logger.error(f"Full Gemini API exception: {err_str}")
             if '429' in err_str or 'ResourceExhausted' in err_str or 'quota' in err_str.lower():
                 logger.warning('Gemini API quota exhausted!')
                 send_message(
