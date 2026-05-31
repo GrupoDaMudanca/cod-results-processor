@@ -21,10 +21,16 @@ paths = [
 ]
 
 if paths:
-    combined_df = pd.concat([
-        latest_df,
-        pd.concat([pd.read_csv(path) for path in paths])
-    ])
+    new_dfs = [pd.read_csv(path) for path in paths]
+    new_combined = pd.concat(new_dfs)
+
+    # Ensure both DataFrames have compatible columns
+    all_columns = list(set(latest_df.columns.tolist() + new_combined.columns.tolist()))
+
+    latest_df = latest_df.reindex(columns=all_columns)
+    new_combined = new_combined.reindex(columns=all_columns)
+
+    combined_df = pd.concat([latest_df, new_combined])
 
     consolidated_df = combined_df.drop_duplicates(subset=['match_id', 'player_id'], keep='first')
 

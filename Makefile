@@ -22,7 +22,7 @@ clean-processed-temp:
 
 .PHONY: clean-results
 clean-results:
-	@rm -f results/*
+	@rm -f results/*.jpg results/*.jpeg results/*.meta.json
 
 .PHONY: consolidate
 consolidate:

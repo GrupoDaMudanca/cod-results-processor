@@ -1,12 +1,16 @@
 {
   "Tucano": [
-    "Tucano_agressivo"
+    "Tucano_agressivo",
+    "TheGhostTucano"
   ],
   "Prefeito": [
-    "DavidAlmeida"
+    "DavidAlmeida",
+    "User53492926",
+    "DavizeiraAlmeida"
   ],
   "Victor": [
-    "VictorAugusto"
+    "VictorAugusto",
+    "Victor Augusto"
   ],
   "Ariel": [
     "Fonset"
@@ -23,22 +27,31 @@
   ],
   "Thiago": [
     "RenzzoThiago",
-    "RenzoThiago"
+    "RenzoThiago",
+    "Renzzo Thiago"
   ],
   "Vini": [
     "VB_CS"
   ],
   "Rafa": [
     "RenzzoRafael",
-    "RenzoRafael"
+    "RenzoRafael",
+    "Rafaralho"
   ],
   "Andre": [
-    "MeuOvo"
+    "MeuOvo",
+    "Meu Ovo"
   ],
   "Jeff": [
     "EduardoBraga"
   ],
   "Roberto": [
     "rcavalcantic"
+  ],
+  "Hell": [
+    "Hell"
+  ],
+  "Ulrich": [
+    "UlrichBR"
   ]
 }

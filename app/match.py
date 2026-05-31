@@ -14,29 +14,34 @@ class MatchRecord(Serializable, ABC):
         self,
         raw_player_name: str,
         score: int,
+        eliminations: int,
         kills: int,
-        damage: int,
+        assists: int,
         redeploys: int,
-        objectives: int
+        damage: int,
+        date: str = None
     ):
         self.player = Player(
             raw_player_name=raw_player_name
         )
         self.score = score
+        self.eliminations = eliminations
         self.kills = kills
-        self.damage = damage
+        self.assists = assists
         self.redeploys = redeploys
-        self.objectives = objectives
+        self.damage = damage
+        self.date = date
 
     @property
     def _serializable_properties(self) -> List[str]:
         return [
             'player',
             'score',
+            'eliminations',
             'kills',
-            'damage',
+            'assists',
             'redeploys',
-            'objectives'
+            'damage'
         ]
 
 

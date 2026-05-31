@@ -1,11 +1,14 @@
 
+import json
+import random
 import requests
+
+from app.telegram import send_message
 
 from config import (
     TELEGRAM_GET_UPDATES_ENDPOINT,
     TELEGRAM_GET_FILE_ENDPOINT,
     TELEGRAM_DOWNLOAD_FILE_ENDPOINT,
-    TELEGRAM_SEND_MESSAGE_ENDPOINT,
     TELEGRAM_CHAT_ID
 )
 
@@ -48,7 +51,7 @@ def get_updates(
     ]
 
 
-def download_file(file_id: str):
+def download_file(file_id: str, message_id: int = None, date: int = None):
     file_path = requests.get(
         TELEGRAM_GET_FILE_ENDPOINT,
         params={
@@ -64,15 +67,14 @@ def download_file(file_id: str):
     with open(f'results/{file_name}', "wb") as file:
         file.write(requests.get(file_endpoint).content)
 
-
-def send_confirmation_message(message: str):
-    return requests.get(
-        TELEGRAM_SEND_MESSAGE_ENDPOINT,
-        params={
-            'chat_id': TELEGRAM_CHAT_ID,
-            'text': message
-        }
-    )
+    # Save metadata alongside the image for later processing
+    meta_name = file_name.rsplit('.', 1)[0] + '.meta.json'
+    metadata = {
+        'message_id': message_id,
+        'date': date,
+    }
+    with open(f'results/{meta_name}', 'w') as meta_file:
+        json.dump(metadata, meta_file)
 
 
 updates = get_updates()
@@ -84,7 +86,12 @@ if not updates:
 print(updates)
 
 for update in updates:
-    download_file(update.get('message').get('photo')[-1].get('file_id'))
+    message = update.get('message')
+    download_file(
+        file_id=message.get('photo')[-1].get('file_id'),
+        message_id=message.get('message_id'),
+        date=message.get('date')
+    )
 
 last_update = max([update.get('update_id') for update in updates]) if updates else None
 
@@ -93,6 +100,18 @@ get_updates(
     confirm_only=True
 )
 
-response = send_confirmation_message(f'Ei! Estou começando a processar até a mensagem de offset {last_update}')
+PROCESSING_MESSAGES = [
+    "Aí dento! Bora ver quem carregou e quem foi carregado nessas partidas... 🧐",
+    "Cheguei pro expediente! Puxando as prints pra analisar o desastre... 📊",
+    "Ei macho, guenta aí que já tô lendo essas imagens pra julgar o desempenho de vocês 🤡",
+    "Ajeitando os óculos aqui pra ler essas tabelas... vamos ver quem foi o peso morto de hoje 🪨",
+    "Pera lá, pera lá! Baixando as fotos do tribunal. Já dou o veredito... 👨‍⚖️",
+    "Limpando o cache do cérebro pra processar essas partidas... 🧠",
+    "Ixe, lá vem mais choro! Deixa eu ver quem foi o MVP do gulag dessa vez... ☠️"
+]
 
-print(response.json())
+msg = random.choice(PROCESSING_MESSAGES)
+print(f'Começando a processar. Offset do Telegram lido: {last_update}')
+response = send_message(msg)
+
+print(response)
