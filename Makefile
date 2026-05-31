@@ -2,8 +2,17 @@
 
 SERVICE_NAME=cod-result-processor
 
-.PHONY: all
-all: clean download-images process consolidate clean
+.PHONY: up
+up:
+	@docker compose up
+
+.PHONY: up-silent
+up-silent:
+	@docker compose up -d
+
+.PHONY: down
+down:
+	@docker compose down
 
 .PHONY: build
 build:
@@ -23,18 +32,6 @@ clean-processed-temp:
 .PHONY: clean-results
 clean-results:
 	@rm -f results/*.jpg results/*.jpeg results/*.meta.json
-
-.PHONY: consolidate
-consolidate:
-	@docker compose run --user=$(shell id -u) --rm ${SERVICE_NAME} python consolidate.py
-
-.PHONY: download-images
-download-images:
-	@docker compose run --user=$(shell id -u) --rm ${SERVICE_NAME} python download_images.py
-
-.PHONY: process
-process:
-	@docker compose run --user=$(shell id -u) --rm ${SERVICE_NAME} python main.py
 
 .PHONY: shell
 shell:

@@ -1,41 +1,43 @@
 import pandas as pd
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.helpers import file_valid
 from config import LATEST_OUTPUT_FILE_PATH, TEMP_OUTPUT_FILES_PATH
 
+def consolidate_data():
+    if not file_valid(LATEST_OUTPUT_FILE_PATH):
+        latest_df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
+    else:
+        latest_df = pd.DataFrame()
+        logger.warning(f"Warning: {LATEST_OUTPUT_FILE_PATH} doesn't exist or is empty. Creating it.")
 
-if not file_valid(LATEST_OUTPUT_FILE_PATH):
-    latest_df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
-else:
-    latest_df = pd.DataFrame()
+    full_base_path = os.path.join(os.getcwd(), TEMP_OUTPUT_FILES_PATH)
 
-    print(f'Warning: {LATEST_OUTPUT_FILE_PATH} doesn\'t exist or is empty. Creating it.')
+    paths = [
+        os.path.join(full_base_path, path) for path in
+        os.listdir(full_base_path)
+        if any(filetype in path for filetype in ['.csv'])
+    ]
 
-full_base_path = os.path.join(os.getcwd(), TEMP_OUTPUT_FILES_PATH)
+    if paths:
+        new_dfs = [pd.read_csv(path) for path in paths]
+        new_combined = pd.concat(new_dfs)
 
-paths = [
-    os.path.join(full_base_path, path) for path in
-    os.listdir(full_base_path)
-    if any(filetype in path for filetype in ['.csv'])
-]
+        # Ensure both DataFrames have compatible columns
+        all_columns = list(set(latest_df.columns.tolist() + new_combined.columns.tolist()))
 
-if paths:
-    new_dfs = [pd.read_csv(path) for path in paths]
-    new_combined = pd.concat(new_dfs)
+        latest_df = latest_df.reindex(columns=all_columns)
+        new_combined = new_combined.reindex(columns=all_columns)
 
-    # Ensure both DataFrames have compatible columns
-    all_columns = list(set(latest_df.columns.tolist() + new_combined.columns.tolist()))
+        combined_df = pd.concat([latest_df, new_combined])
 
-    latest_df = latest_df.reindex(columns=all_columns)
-    new_combined = new_combined.reindex(columns=all_columns)
+        consolidated_df = combined_df.drop_duplicates(subset=['match_id', 'player_id'], keep='first')
 
-    combined_df = pd.concat([latest_df, new_combined])
+        consolidated_df.to_csv(LATEST_OUTPUT_FILE_PATH, index=False)
 
-    consolidated_df = combined_df.drop_duplicates(subset=['match_id', 'player_id'], keep='first')
-
-    consolidated_df.to_csv(LATEST_OUTPUT_FILE_PATH, index=False)
-
-    print(f'Data consolidated and saved to {LATEST_OUTPUT_FILE_PATH}')
-else:
-    print("No new files found to consolidate")
+        logger.info(f'Data consolidated and saved to {LATEST_OUTPUT_FILE_PATH}')
+    else:
+        logger.info("No new files found to consolidate")

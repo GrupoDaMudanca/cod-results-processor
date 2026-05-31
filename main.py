@@ -1,206 +1,73 @@
-import json
+import time
 import os
-import random
-from datetime import datetime
-from typing import List
+import shutil
+import logging
 
-from app.helpers import read_new_match, write_matches, match_exists
-from app.match import Match
-from app.metrics import evaluate_best_metric
-from app.telegram import send_message
-
-from config import (
-    GEMINI_API_KEY,
-    GEMINI_DESIRED_MODEL,
-    RESULT_FILETYPES,
-    RESULT_FILES_PATH
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+logger = logging.getLogger(__name__)
 
-from google import genai
-from google.genai import types
-
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-# Structured schema for Gemini response
-RESULT_SCHEMA = {
-    "type": "ARRAY",
-    "items": {
-        "type": "OBJECT",
-        "properties": {
-            "raw_player_name": {
-                "type": "STRING",
-                "description": "Nome ou Name do jogador"
-            },
-            "score": {
-                "type": "INTEGER",
-                "description": "Pontuação ou Score"
-            },
-            "eliminations": {
-                "type": "INTEGER",
-                "description": "Eliminações ou Eliminations"
-            },
-            "kills": {
-                "type": "INTEGER",
-                "description": "Baixas ou Kills"
-            },
-            "assists": {
-                "type": "INTEGER",
-                "description": "Assist. ou Assists"
-            },
-            "redeploys": {
-                "type": "INTEGER",
-                "description": "Remobilizações ou Redeploys"
-            },
-            "damage": {
-                "type": "INTEGER",
-                "description": "Dano ou Damage"
-            }
-        },
-        "required": ["raw_player_name", "score", "eliminations", "kills", "assists", "redeploys", "damage"]
-    }
-}
+from download_images import poll_and_download, confirm_updates
+from process_images import process_all
+from consolidate import consolidate_data
+from config import RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH
 
 
-def read_image_metadata(image_path: str) -> dict:
-    """Read companion .meta.json file for a downloaded image."""
-    base_name = image_path.rsplit('.', 1)[0]
-    meta_path = base_name + '.meta.json'
-
-    if os.path.exists(meta_path):
-        with open(meta_path, 'r') as f:
-            return json.load(f)
-
-    return {}
-
-
-def process_file(image_path: str, date: str = None) -> Match:
-    print(f'Processing {image_path}')
-
-    uploaded_file = client.files.upload(file=image_path)
-    print(f'Uploaded file: {uploaded_file.name}')
-
-    prompt = "Read this image for me. Disconsider the line showing the squad's total points."
-
-    result = client.models.generate_content(
-        model=GEMINI_DESIRED_MODEL,
-        contents=[uploaded_file, "\n\n", prompt],
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=RESULT_SCHEMA
-        )
-    )
-
-    # Delete the uploaded file from Google servers
-    client.files.delete(name=uploaded_file.name)
-
-    result_text = result.text
-
-    print(result_text)
-
-    match_data = json.loads(result_text)
-
-    match = read_new_match(match_data, date=date)
-
-    return match
-
-
-def process_files(root_path: str) -> List[Match]:
-    full_base_path = os.path.join(os.getcwd(), root_path)
-
-    image_paths = [
-        os.path.join(full_base_path, path) for path in
-        os.listdir(full_base_path)
-        if any(filetype in path for filetype in RESULT_FILETYPES)
-    ]
-
-    if not image_paths:
-        return []
-
-    matches = []
-
-    for image_path in image_paths:
-        # Read metadata (message_id, date) from companion JSON
-        metadata = read_image_metadata(image_path)
-        message_id = metadata.get('message_id')
-
-        # Parse date from Telegram timestamp or use current date
-        telegram_date = metadata.get('date')
-        if telegram_date:
-            date_str = datetime.fromtimestamp(telegram_date).strftime('%d/%m/%Y')
+def cleanup():
+    """Clean up the results and processed/temp folders after a successful cycle."""
+    for folder in [RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH]:
+        full_path = os.path.join(os.getcwd(), folder)
+        if os.path.exists(full_path):
+            for filename in os.listdir(full_path):
+                file_path = os.path.join(full_path, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    logger.error(f'Failed to delete {file_path}. Reason: {e}')
         else:
-            date_str = datetime.now().strftime('%d/%m/%Y')
+            os.makedirs(full_path)
 
-        # Process the image with Gemini
+def run_daemon():
+    logger.info("Starting Call of Duty results processor bot...")
+    
+    # Certificar de que as pastas existam ao iniciar
+    for folder in [RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH]:
+        full_path = os.path.join(os.getcwd(), folder)
+        os.makedirs(full_path, exist_ok=True)
+        
+    while True:
         try:
-            match = process_file(image_path, date=date_str)
+            # Poll with timeout for long-polling
+            last_update = poll_and_download(timeout=30)
+            
+            if last_update:
+                logger.info(f"Downloaded images up to offset {last_update}. Starting processing...")
+                
+                # Process the downloaded files
+                processed_any = process_all()
+                
+                if processed_any:
+                    logger.info("Processing complete. Consolidating data...")
+                    # Consolidate results into latest.csv
+                    consolidate_data()
+                    
+                # Clean up local temp files before confirming
+                cleanup()
+                
+                # Confirm to telegram so we don't process them again
+                logger.info("Confirming messages to Telegram...")
+                confirm_updates(last_update)
+                
+                logger.info("Cycle completed successfully. Waiting for new messages...")
         except Exception as e:
-            err_str = str(e)
-            if '429' in err_str or 'ResourceExhausted' in err_str or 'quota' in err_str.lower():
-                print('Gemini API quota exhausted!')
-                send_message(
-                    'Ei bixo, eu tô meio liso ó, fiquei sem tokens 😅 tenta mandar dnv depois',
-                    reply_to_message_id=message_id
-                )
-                break
-            elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str:
-                print('Gemini API key is invalid or missing.')
-                send_message(
-                    'Vixe macho, perdi meu cérebro 🤡 Tem como tu me dar uma ajudinha?',
-                    reply_to_message_id=message_id
-                )
-                break
-            raise e
-
-        # Check for duplicates
-        if match_exists(match.id):
-            print(f'Match {match.id} already exists, skipping.')
-            if message_id:
-                DUPLICATE_MESSAGES = [
-                    "ei keres leyte, já foi processado essa imagem",
-                    "Aí dento, tá mandando print repetido pra farmar ponto é? 🤡",
-                    "Oxe, essa partida aí eu já contei faz é tempo! Tá achando que eu sou besta?",
-                    "Print duplicada detectada! Pelo visto alguém tá tentando inflar os stats... 👀",
-                    "Vixe, essa imagem aí já passou pelo tribunal. Manda outra!",
-                    "Repetido! Se continuar mandando print velho vou zerar teus pontos 💀",
-                    "Já li essa meu chapa! Tenta a sorte na próxima. 🕵️‍♂️"
-                ]
-                send_message(
-                    random.choice(DUPLICATE_MESSAGES),
-                    reply_to_message_id=message_id
-                )
-            continue
-
-        # Evaluate metrics and send zoeira reply
-        player_stats = [
-            {
-                'player_name': record.player.name or record.player.id,
-                'kills': record.kills,
-                'damage': record.damage,
-                'redeploys': record.redeploys,
-            }
-            for record in match.records
-        ]
-
-        best_metric = evaluate_best_metric(player_stats)
-
-        if best_metric and best_metric.message:
-            print(f'Metric reply: {best_metric.message} (score: {best_metric.score})')
-            if message_id:
-                send_message(
-                    best_metric.message,
-                    reply_to_message_id=message_id
-                )
-            else:
-                send_message(best_metric.message)
-
-        matches.append(match)
-
-    return matches
+            logger.error(f"Unexpected error in main loop: {e}")
+            time.sleep(5)  # Pause um pouco antes de tentar novamente para não espamar logs
 
 
-matches = process_files(RESULT_FILES_PATH)
-
-if matches:
-    write_matches(matches)
-else:
-    print('There were no new matches to process')
+if __name__ == '__main__':
+    run_daemon()

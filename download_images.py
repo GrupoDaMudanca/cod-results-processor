@@ -2,6 +2,9 @@
 import json
 import random
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.telegram import send_message
 
@@ -20,18 +23,22 @@ def is_message_photo(message) -> bool:
 def get_updates(
     offset: int = None,
     chat_id: int = None,
-    confirm_only: bool = False
+    confirm_only: bool = False,
+    timeout: int = 30
 ):
     if confirm_only and not offset:
         raise Exception('You must provide an offset to confirm')
     elif offset:
         offset += 1
 
+    params = {'offset': offset}
+    if not confirm_only:
+        params['timeout'] = timeout
+
     updates = requests.get(
         TELEGRAM_GET_UPDATES_ENDPOINT,
-        params={
-            'offset': offset
-        }
+        params=params,
+        timeout=timeout + 5 if not confirm_only else 10
     ).json()
 
     if not updates.get('ok', False) and not confirm_only:
@@ -59,7 +66,7 @@ def download_file(file_id: str, message_id: int = None, date: int = None):
         }
     ).json().get('result').get('file_path')
 
-    print(f'Got {file_id}: {file_path}')
+    logger.info(f'Got {file_id}: {file_path}')
 
     file_name = file_path.split('/')[-1]
     file_endpoint = f'{TELEGRAM_DOWNLOAD_FILE_ENDPOINT}/{file_path}'
@@ -77,41 +84,44 @@ def download_file(file_id: str, message_id: int = None, date: int = None):
         json.dump(metadata, meta_file)
 
 
-updates = get_updates()
+def poll_and_download(timeout: int = 30) -> int:
+    updates = get_updates(timeout=timeout)
 
-if not updates:
-    print('There are no updates')
-    exit(0)
+    if not updates:
+        return None
 
-print(updates)
+    logger.info(f"Updates received: {updates}")
 
-for update in updates:
-    message = update.get('message')
-    download_file(
-        file_id=message.get('photo')[-1].get('file_id'),
-        message_id=message.get('message_id'),
-        date=message.get('date')
-    )
+    for update in updates:
+        message = update.get('message')
+        download_file(
+            file_id=message.get('photo')[-1].get('file_id'),
+            message_id=message.get('message_id'),
+            date=message.get('date')
+        )
 
-last_update = max([update.get('update_id') for update in updates]) if updates else None
+    last_update = max([update.get('update_id') for update in updates]) if updates else None
 
-get_updates(
-    offset=last_update,
-    confirm_only=True
-)
+    PROCESSING_MESSAGES = [
+        "Aí dento! Bora ver quem carregou e quem foi carregado nessas partidas... 🧐",
+        "Cheguei pro expediente! Puxando as prints pra analisar o desastre... 📊",
+        "Ei macho, guenta aí que já tô lendo essas imagens pra julgar o desempenho de vocês 🤡",
+        "Ajeitando os óculos aqui pra ler essas tabelas... vamos ver quem foi o peso morto de hoje 🪨",
+        "Pera lá, pera lá! Baixando as fotos do tribunal. Já dou o veredito... 👨‍⚖️",
+        "Limpando o cache do cérebro pra processar essas partidas... 🧠",
+        "Ixe, lá vem mais choro! Deixa eu ver quem foi o MVP do gulag dessa vez... ☠️"
+    ]
 
-PROCESSING_MESSAGES = [
-    "Aí dento! Bora ver quem carregou e quem foi carregado nessas partidas... 🧐",
-    "Cheguei pro expediente! Puxando as prints pra analisar o desastre... 📊",
-    "Ei macho, guenta aí que já tô lendo essas imagens pra julgar o desempenho de vocês 🤡",
-    "Ajeitando os óculos aqui pra ler essas tabelas... vamos ver quem foi o peso morto de hoje 🪨",
-    "Pera lá, pera lá! Baixando as fotos do tribunal. Já dou o veredito... 👨‍⚖️",
-    "Limpando o cache do cérebro pra processar essas partidas... 🧠",
-    "Ixe, lá vem mais choro! Deixa eu ver quem foi o MVP do gulag dessa vez... ☠️"
-]
+    msg = random.choice(PROCESSING_MESSAGES)
+    logger.info(f'Starting processing. Telegram offset read: {last_update}')
+    send_message(msg)
 
-msg = random.choice(PROCESSING_MESSAGES)
-print(f'Começando a processar. Offset do Telegram lido: {last_update}')
-response = send_message(msg)
+    return last_update
 
-print(response)
+
+def confirm_updates(last_update: int):
+    if last_update:
+        get_updates(
+            offset=last_update,
+            confirm_only=True
+        )
