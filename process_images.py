@@ -16,7 +16,8 @@ from config import (
     GEMINI_API_KEY,
     GEMINI_DESIRED_MODEL,
     RESULT_FILETYPES,
-    RESULT_FILES_PATH
+    RESULT_FILES_PATH,
+    PLAYER_NAMES_FILE_PATH
 )
 
 from google import genai
@@ -82,7 +83,19 @@ def process_file(image_path: str, date: str = None) -> Match:
     uploaded_file = client.files.upload(file=image_path)
     logger.info(f'Uploaded file: {uploaded_file.name}')
 
-    prompt = "Read this image for me. Disconsider the line showing the squad's total points."
+    possible_names_str = ""
+    if os.path.exists(PLAYER_NAMES_FILE_PATH):
+        with open(PLAYER_NAMES_FILE_PATH, 'r') as f:
+            clan_mapping = json.load(f)
+            possible_names = []
+            for aliases in clan_mapping.values():
+                possible_names.extend(aliases)
+            possible_names_str = ", ".join(possible_names)
+
+    prompt = (
+        "Read this image for me. Disconsider the line showing the squad's total points. "
+        f"Here is a list of expected player names. If you see a name that closely resembles one of these, please use this EXACT spelling: {possible_names_str}"
+    )
 
     result = client.models.generate_content(
         model=GEMINI_DESIRED_MODEL,
@@ -146,25 +159,31 @@ def process_files(root_path: str) -> List[Match]:
                     reply_to_message_id=message_id
                 )
                 break
-            elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str:
+            elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str or '401' in err_str or 'UNAUTHENTICATED' in err_str:
                 logger.error('Gemini API key is invalid or missing.')
                 send_message(
                     'Vixe macho, perdi meu cérebro 🤡 Tem como tu me dar uma ajudinha?',
                     reply_to_message_id=message_id
                 )
                 break
-            raise e
+            else:
+                logger.error(f'Unexpected error processing image {image_path}')
+                send_message(
+                    'Deu um erro doido aqui tentando ler essa imagem... 😵‍💫 tenta de novo!',
+                    reply_to_message_id=message_id
+                )
+                continue
 
         # Check for duplicates
         if match_exists(match.id):
             logger.info(f'Match {match.id} already exists, skipping.')
             if message_id:
                 DUPLICATE_MESSAGES = [
-                    "ei keres leyte, já foi processado essa imagem",
+                    "ei keres leyte, já foi processado essa imagem 🥛",
                     "Aí dento, tá mandando print repetido pra farmar ponto é? 🤡",
-                    "Oxe, essa partida aí eu já contei faz é tempo! Tá achando que eu sou besta?",
+                    "Oxe, essa partida aí eu já contei faz é tempo! Tá achando que eu sou besta? 🐴",
                     "Print duplicada detectada! Pelo visto alguém tá tentando inflar os stats... 👀",
-                    "Vixe, essa imagem aí já passou pelo tribunal. Manda outra!",
+                    "Vixe, essa imagem aí já passou pelo tribunal. Manda outra! ⚖️",
                     "Repetido! Se continuar mandando print velho vou zerar teus pontos 💀",
                     "Já li essa meu chapa! Tenta a sorte na próxima. 🕵️‍♂️"
                 ]
@@ -174,40 +193,46 @@ def process_files(root_path: str) -> List[Match]:
                 )
             continue
 
-        # Evaluate metrics and send zoeira reply
         player_stats = [
             {
-                'player_name': record.player.name or record.player.id,
+                'player_name': record.player.name if record.player.name else record.player.id,
                 'kills': record.kills,
                 'damage': record.damage,
                 'redeploys': record.redeploys,
+                'is_clan_member': record.player.name is not None
             }
             for record in match.records
         ]
 
         best_metric = evaluate_best_metric(player_stats)
+        metric_message = best_metric.message if best_metric else None
 
-        if best_metric and best_metric.message:
-            logger.info(f'Metric reply: {best_metric.message} (score: {best_metric.score})')
-            if message_id:
-                send_message(
-                    best_metric.message,
-                    reply_to_message_id=message_id
-                )
-            else:
-                send_message(best_metric.message)
+        if metric_message:
+            logger.info(f'Metric reply: {metric_message} (score: {best_metric.score})')
 
-        matches.append(match)
+        matches.append((match, message_id, metric_message))
 
     return matches
 
 
-def process_all() -> bool:
-    matches = process_files(RESULT_FILES_PATH)
+def process_all():
+    results = process_files(RESULT_FILES_PATH)
+    
+    matches = [r[0] for r in results]
+    last_message_id = results[-1][1] if results else None
+    
+    # Get the highest scored metric message across all processed images in this batch
+    best_message = None
+    if results:
+        # We just pick the last non-empty message for simplicity, or the first one we find
+        for r in reversed(results):
+            if r[2]:
+                best_message = r[2]
+                break
 
     if matches:
         write_matches(matches)
-        return True
+        return True, last_message_id, best_message
     else:
         logger.info('There were no new matches to process')
-        return False
+        return False, None, None

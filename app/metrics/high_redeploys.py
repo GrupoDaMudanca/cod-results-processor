@@ -8,15 +8,15 @@ class HighQuantityRedeploys(MetricReply):
     """Detects players with significantly high redeploys compared to the group."""
 
     MESSAGES = [
-        lambda name: f"O {name} tava mais escondido que Mister M em show de mágica",
-        lambda name: f"O {name} tava mais sumido que Wi-Fi em zona rural",
-        lambda name: f"O {name} tava mais escondido que controle remoto em dia de jogo",
-        lambda name: f"O {name} tava mais difícil de achar que agulha no palheiro",
-        lambda name: f"O {name} tava mais desaparecido que férias no fim do mês",
-        lambda name: f"O {name} tava mais escondido que spoiler de série boa",
-        lambda name: f"O {name} tava mais sumido que dinheiro depois do 5º dia útil",
-        lambda name: f"O {name} tava mais escondido que senha de Wi-Fi em casa de visita",
-        lambda name: f"O {name} tava mais off que luz em dia de tempestade",
+        lambda name: f"O {name} tava mais escondido que Mister M em show de mágica 🎩",
+        lambda name: f"O {name} tava mais sumido que Wi-Fi em zona rural 📡",
+        lambda name: f"O {name} tava mais escondido que controle remoto em dia de jogo 📺",
+        lambda name: f"O {name} tava mais difícil de achar que agulha no palheiro 🪡",
+        lambda name: f"O {name} tava mais desaparecido que férias no fim do mês 🏝️",
+        lambda name: f"O {name} tava mais escondido que spoiler de série boa 🤫",
+        lambda name: f"O {name} tava mais sumido que dinheiro depois do 5º dia útil 💸",
+        lambda name: f"O {name} tava mais escondido que senha de Wi-Fi em casa de visita 🔐",
+        lambda name: f"O {name} tava mais off que luz em dia de tempestade ⚡",
     ]
 
     def evaluate(self, report: list[dict]) -> MetricResult:
@@ -41,6 +41,7 @@ class HighQuantityRedeploys(MetricReply):
             if r['redeploys'] >= min_redeploys
             and std_dev > 0
             and (r['redeploys'] - redeploys_mean) / std_dev > z_score_threshold
+            and r.get('is_clan_member', False)
         ]
 
         if not outliers:

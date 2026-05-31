@@ -8,14 +8,14 @@ class LowQtdKills(MetricReply):
     """Detects players with significantly low kills compared to the group average."""
 
     MESSAGES = [
-        lambda name: f"Ei {name}, tu tá só assistindo a partida é?",
-        lambda name: f"Pelo visto o {name} comprou ingresso, não fuzil.",
-        lambda name: f"O {name} tá mais parado que cone de trânsito.",
-        lambda name: f"Chama o {name} pro jogo, ele esqueceu que não é espectador.",
-        lambda name: f"{name}, teu controle tá funcionando ou tá no modo demo?",
-        lambda name: f"Se o {name} fosse mais parado virava mobília do mapa.",
-        lambda name: f"{name}, tá esperando o jogo acabar pra começar a jogar?",
-        lambda name: f"Alguém avisa o {name} que ele não tá vendo uma live.",
+        lambda name: f"Ei {name}, tu tá só assistindo a partida é? 🍿",
+        lambda name: f"Pelo visto o {name} comprou ingresso, não fuzil. 🎟️",
+        lambda name: f"O {name} tá mais parado que cone de trânsito. 🚧",
+        lambda name: f"Chama o {name} pro jogo, ele esqueceu que não é espectador. 📺",
+        lambda name: f"{name}, teu controle tá funcionando ou tá no modo demo? 🎮",
+        lambda name: f"Se o {name} fosse mais parado virava mobília do mapa. 🛋️",
+        lambda name: f"{name}, tá esperando o jogo acabar pra começar a jogar? ⏳",
+        lambda name: f"Alguém avisa o {name} que ele não tá vendo uma live. 📱",
     ]
 
     def evaluate(self, report: list[dict]) -> MetricResult:
@@ -38,6 +38,7 @@ class LowQtdKills(MetricReply):
         outliers = [
             r for r in sorted_report
             if std_dev > 0 and (r['kills'] - kills_mean) / std_dev < z_score_threshold
+            and r.get('is_clan_member', False)
         ]
 
         if not outliers:

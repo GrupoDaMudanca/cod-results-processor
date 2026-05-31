@@ -8,13 +8,13 @@ class WasteBullet(MetricReply):
     """Detects players with high damage but poor kill conversion (wasting bullets)."""
 
     MESSAGES = [
-        lambda name: f"Ei {name}, tá com pena de gastar bala é?",
-        lambda name: f"{name}, tu foi armado ou levou paintball?",
-        lambda name: f"O {name} economizou tanto tiro que deve estar guardando pra outra partida.",
-        lambda name: f"Se o dano do {name} fosse nota, reprovava com louvor.",
-        lambda name: f"Alguém avisa o {name} que o objetivo é atirar nos inimigos.",
-        lambda name: f"O {name} gastou mais tempo mirando que causando dano.",
-        lambda name: f"{name}, tua arma tava no modo economia de energia?",
+        lambda name: f"Ei {name}, tá com pena de gastar bala é? 🔫",
+        lambda name: f"{name}, tu foi armado ou levou paintball? 🎨",
+        lambda name: f"O {name} economizou tanto tiro que deve estar guardando pra outra partida. 🧳",
+        lambda name: f"Se o dano do {name} fosse nota, reprovava com louvor. 📉",
+        lambda name: f"Alguém avisa o {name} que o objetivo é atirar nos inimigos. 🎯",
+        lambda name: f"O {name} gastou mais tempo mirando que causando dano. 🔭",
+        lambda name: f"{name}, tua arma tava no modo economia de energia? 🔋",
     ]
 
     def evaluate(self, report: list[dict]) -> MetricResult:
@@ -52,6 +52,7 @@ class WasteBullet(MetricReply):
             if p['kills'] < kills_mean
             and eff_std_dev > 0
             and (p['damage_per_kill'] - eff_mean) / eff_std_dev > 0.8
+            and p.get('is_clan_member', False)
         ]
 
         if not outliers:
