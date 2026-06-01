@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 from config import (
     TELEGRAM_SEND_MESSAGE_ENDPOINT,
     TELEGRAM_SEND_PHOTO_ENDPOINT,
+    TELEGRAM_GET_CHAT_ADMINISTRATORS_ENDPOINT,
     TELEGRAM_CHAT_ID
 )
 
@@ -50,3 +51,22 @@ def send_photo(photo_path: str, caption: str = None, reply_to_message_id: int = 
     except Exception as e:
         logger.error(f'Failed to send Telegram photo: {e}')
         return None
+
+def get_chat_administrators() -> list[str]:
+    """Get a list of administrator user IDs for the chat."""
+    params = {
+        'chat_id': TELEGRAM_CHAT_ID
+    }
+    try:
+        response = requests.get(
+            TELEGRAM_GET_CHAT_ADMINISTRATORS_ENDPOINT,
+            params=params
+        ).json()
+        if response.get('ok'):
+            # Return list of user IDs (as strings for easier comparison)
+            return [str(admin.get('user', {}).get('id')) for admin in response.get('result', [])]
+        logger.error(f"Failed to get chat administrators: {response.get('description')}")
+        return []
+    except Exception as e:
+        logger.error(f'Failed to get chat administrators: {e}')
+        return []

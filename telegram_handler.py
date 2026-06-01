@@ -3,11 +3,13 @@ import json
 import random
 import requests
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
-from app.telegram import send_message
-from app.messages import PROCESSING_MESSAGES
+from app.telegram import send_message, get_chat_administrators
+from app.messages import PROCESSING_MESSAGES, BACKFILL_START_MESSAGES, BACKFILL_END_MESSAGES, UNAUTHORIZED_MESSAGES, INVALID_BACKFILL_FORMAT_MESSAGES
+from app.backfill import set_backfill, clear_backfill
 
 from config import (
     TELEGRAM_GET_UPDATES_ENDPOINT,
@@ -43,7 +45,10 @@ def get_updates(
     ).json()
 
     if not updates.get('ok', False) and not confirm_only:
-        raise Exception('Failed to get updates!')
+        raise Exception(f"Failed to get updates! Response: {updates}")
+
+    if updates.get('result'):
+        logger.info(f"Raw updates from Telegram: {updates.get('result')}")
 
     elif not updates.get('ok', False) and confirm_only:
         return False
@@ -53,9 +58,8 @@ def get_updates(
 
     return [
         update for update in updates.get('result')
-        if (not chat_id or update.get('message').get('chat').get('id') == chat_id)
+        if (not chat_id or update.get('message', {}).get('chat', {}).get('id') == chat_id)
         and update.get('message')
-        and is_message_photo(update.get('message'))
     ]
 
 
@@ -93,19 +97,46 @@ def poll_and_download(timeout: int = 30) -> int:
 
     logger.info(f"Updates received: {updates}")
 
+    has_photo = False
     for update in updates:
         message = update.get('message')
-        download_file(
-            file_id=message.get('photo')[-1].get('file_id'),
-            message_id=message.get('message_id'),
-            date=message.get('date')
-        )
+        if not message:
+            continue
+            
+        text = message.get('text', '')
+        if text.startswith('/backfill'):
+            from_id = str(message.get('from', {}).get('id', ''))
+            admins = get_chat_administrators()
+            if from_id not in admins:
+                send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message_id=message.get('message_id'))
+                continue
+                
+            if text == '/backfill end':
+                clear_backfill()
+                send_message(random.choice(BACKFILL_END_MESSAGES), reply_to_message_id=message.get('message_id'))
+            else:
+                match = re.match(r'^/backfill (\d{4})/(\d{2})$', text.strip())
+                if match:
+                    year, month = match.groups()
+                    set_backfill(year, month)
+                    send_message(random.choice(BACKFILL_START_MESSAGES), reply_to_message_id=message.get('message_id'))
+                else:
+                    send_message(random.choice(INVALID_BACKFILL_FORMAT_MESSAGES), reply_to_message_id=message.get('message_id'))
+                        
+        elif is_message_photo(message):
+            download_file(
+                file_id=message.get('photo')[-1].get('file_id'),
+                message_id=message.get('message_id'),
+                date=message.get('date')
+            )
+            has_photo = True
 
     last_update = max([update.get('update_id') for update in updates]) if updates else None
 
-    msg = random.choice(PROCESSING_MESSAGES)
-    logger.info(f'Starting processing. Telegram offset read: {last_update}')
-    send_message(msg)
+    if has_photo:
+        msg = random.choice(PROCESSING_MESSAGES)
+        logger.info(f'Starting processing. Telegram offset read: {last_update}')
+        send_message(msg)
 
     return last_update
 

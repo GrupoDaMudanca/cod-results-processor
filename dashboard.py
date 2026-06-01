@@ -18,6 +18,13 @@ def load_data():
     
     df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
     
+    # Filter by current month
+    current_date = datetime.now()
+    current_month_str = current_date.strftime('%m/%Y')
+    
+    if 'date' in df.columns:
+        df = df[df['date'].astype(str).str.endswith(current_month_str, na=False)]
+    
     # Filter only clan members (those with a mapped player_name)
     df = df[df['player_name'].notna() & (df['player_name'] != '')]
     return df

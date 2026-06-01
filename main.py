@@ -11,8 +11,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from download_images import poll_and_download, confirm_updates
-from process_images import process_all
+from telegram_handler import poll_and_download, confirm_updates
+from match_processor import process_all
 from consolidate import consolidate_data
 from dashboard import generate_dashboard_image
 from app.telegram import send_photo

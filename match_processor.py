@@ -17,6 +17,7 @@ from app.messages import (
     ERROR_API_KEY_MESSAGES,
     ERROR_UNEXPECTED_MESSAGES,
 )
+from app.backfill import get_backfill
 
 from config import (
     GEMINI_API_KEY,
@@ -144,11 +145,15 @@ def process_files(root_path: str) -> List[Match]:
         message_id = metadata.get('message_id')
 
         # Parse date from Telegram timestamp or use current date
-        telegram_date = metadata.get('date')
-        if telegram_date:
-            date_str = datetime.fromtimestamp(telegram_date).strftime('%d/%m/%Y')
+        backfill_data = get_backfill()
+        if backfill_data:
+            date_str = f"01/{backfill_data['month']}/{backfill_data['year']}"
         else:
-            date_str = datetime.now().strftime('%d/%m/%Y')
+            telegram_date = metadata.get('date')
+            if telegram_date:
+                date_str = datetime.fromtimestamp(telegram_date).strftime('%d/%m/%Y')
+            else:
+                date_str = datetime.now().strftime('%d/%m/%Y')
 
         # Process the image with Gemini
         try:
