@@ -11,7 +11,7 @@ from config import (
 )
 
 
-def send_message(text: str, reply_to_message_id: int = None):
+def send_message(text: str, reply_to_message_id: int = None, msg_type: str = "UNKNOWN"):
     """Send a message to the Telegram chat, optionally replying to a specific message."""
     params = {
         'chat_id': TELEGRAM_CHAT_ID,
@@ -22,6 +22,7 @@ def send_message(text: str, reply_to_message_id: int = None):
         params['reply_to_message_id'] = reply_to_message_id
 
     try:
+        logger.info(f"[TELEGRAM_OUTGOING] Type: {msg_type} | Message: {text}")
         response = requests.get(
             TELEGRAM_SEND_MESSAGE_ENDPOINT,
             params=params
@@ -32,7 +33,7 @@ def send_message(text: str, reply_to_message_id: int = None):
         return None
 
 
-def send_photo(photo_path: str, caption: str = None, reply_to_message_id: int = None):
+def send_photo(photo_path: str, caption: str = None, reply_to_message_id: int = None, msg_type: str = "UNKNOWN"):
     """Send a photo to the Telegram chat."""
     try:
         with open(photo_path, 'rb') as photo:
@@ -42,6 +43,8 @@ def send_photo(photo_path: str, caption: str = None, reply_to_message_id: int = 
                 data['caption'] = caption
             if reply_to_message_id:
                 data['reply_to_message_id'] = reply_to_message_id
+            
+            logger.info(f"[TELEGRAM_OUTGOING] Type: {msg_type} | Photo with caption: {caption}")
             response = requests.post(
                 TELEGRAM_SEND_PHOTO_ENDPOINT,
                 data=data,

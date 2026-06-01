@@ -17,6 +17,7 @@ from consolidate import consolidate_data
 from dashboard import generate_dashboard_image
 from app.telegram import send_photo
 from app.messages import FALLBACK_MESSAGES
+from app.backfill import get_backfill
 
 
 def cleanup():
@@ -65,15 +66,21 @@ def run_daemon():
                     consolidate_data()
                     
                     logger.info("Generating and sending dashboard...")
-                    dashboard_path = generate_dashboard_image()
+                    backfill_data = get_backfill()
+                    if backfill_data:
+                        dashboard_path = generate_dashboard_image(target_year=int(backfill_data['year']), target_month=int(backfill_data['month']))
+                    else:
+                        dashboard_path = generate_dashboard_image()
                     if dashboard_path:
                         if funny_msg:
                             caption = funny_msg
+                            msg_type = "DASHBOARD_METRIC_REPLY"
                         else:
                             import random
                             caption = random.choice(FALLBACK_MESSAGES)
+                            msg_type = "FALLBACK"
                             
-                        send_photo(dashboard_path, caption=caption, reply_to_message_id=msg_id)
+                        send_photo(dashboard_path, caption=caption, reply_to_message_id=msg_id, msg_type=msg_type)
                     
                 # Clean up local temp files
                 cleanup()

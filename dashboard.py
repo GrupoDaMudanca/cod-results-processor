@@ -12,25 +12,28 @@ logger = logging.getLogger(__name__)
 
 from config import LATEST_OUTPUT_FILE_PATH, PLAYER_NAMES_FILE_PATH
 
-def load_data():
+def load_data(target_year=None, target_month=None):
     if not os.path.exists(LATEST_OUTPUT_FILE_PATH):
         return pd.DataFrame()
     
     df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
     
-    # Filter by current month
-    current_date = datetime.now()
-    current_month_str = current_date.strftime('%m/%Y')
+    # Filter by target month or current month
+    if target_year and target_month:
+        month_str = f"{str(target_month).zfill(2)}/{target_year}"
+    else:
+        current_date = datetime.now()
+        month_str = current_date.strftime('%m/%Y')
     
     if 'date' in df.columns:
-        df = df[df['date'].astype(str).str.endswith(current_month_str, na=False)]
+        df = df[df['date'].astype(str).str.endswith(month_str, na=False)]
     
     # Filter only clan members (those with a mapped player_name)
     df = df[df['player_name'].notna() & (df['player_name'] != '')]
     return df
 
-def generate_dashboard_image(output_path='results/dashboard.png'):
-    df = load_data()
+def generate_dashboard_image(output_path='results/dashboard.png', target_year=None, target_month=None):
+    df = load_data(target_year, target_month)
     if df.empty:
         logger.warning("No data available to generate dashboard.")
         return None
@@ -99,9 +102,14 @@ def generate_dashboard_image(output_path='results/dashboard.png'):
     ax.axis('off')
 
     # Title
-    current_date = datetime.now()
-    month_name = current_date.strftime('%B').capitalize()
-    year = current_date.strftime('%Y')
+    if target_year and target_month:
+        month_obj = datetime.strptime(f"{target_month}", "%m")
+        month_name = month_obj.strftime('%B').capitalize()
+        year = str(target_year)
+    else:
+        current_date = datetime.now()
+        month_name = current_date.strftime('%B').capitalize()
+        year = current_date.strftime('%Y')
     
     plt.text(0.5, 0.95, "Destaques de Ressurgência", color="white", fontsize=24, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
     plt.text(0.5, 0.91, f"{month_name} / {year}", color="#a0a0b0", fontsize=16, ha='center', va='center', transform=ax.transAxes)
