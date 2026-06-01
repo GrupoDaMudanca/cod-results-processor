@@ -92,6 +92,11 @@ def download_file(file_id: str, message_id: int = None, date: int = None):
         'message_id': message_id,
         'date': date,
     }
+    
+    backfill_data = get_backfill()
+    if backfill_data:
+        metadata['backfill'] = backfill_data
+        
     with open(f'results/{meta_name}', 'w') as meta_file:
         json.dump(metadata, meta_file)
 

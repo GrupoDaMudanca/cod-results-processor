@@ -17,7 +17,6 @@ from app.messages import (
     ERROR_API_KEY_MESSAGES,
     ERROR_UNEXPECTED_MESSAGES,
 )
-from app.backfill import get_backfill
 
 from config import (
     GEMINI_API_KEY,
@@ -145,7 +144,7 @@ def process_files(root_path: str) -> List[Match]:
         message_id = metadata.get('message_id')
 
         # Parse date from Telegram timestamp or use current date
-        backfill_data = get_backfill()
+        backfill_data = metadata.get('backfill')
         if backfill_data:
             date_str = f"01/{backfill_data['month']}/{backfill_data['year']}"
         else:
