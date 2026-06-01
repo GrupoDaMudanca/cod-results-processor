@@ -166,4 +166,4 @@ cython_debug/
 results/*
 processed/*
 .env.development
-
+.data/

@@ -36,11 +36,11 @@ clean: clean-processed-temp clean-results
 
 .PHONY: clean-processed-temp
 clean-processed-temp:
-	@rm -f processed/temp/*
+	@rm -f .data/processed/temp/*
 
 .PHONY: clean-results
 clean-results:
-	@rm -f results/*.jpg results/*.jpeg results/*.meta.json
+	@rm -f .data/results/*.jpg .data/results/*.jpeg .data/results/*.meta.json
 
 .PHONY: shell
 shell:

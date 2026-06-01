@@ -4,11 +4,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-BACKFILL_FILE_PATH = 'backfill.json'
-UNRESTRICT_FILE_PATH = 'unrestrict.json'
+DATA_DIR = '.data'
+BACKFILL_FILE_PATH = os.path.join(DATA_DIR, 'backfill.json')
+UNRESTRICT_FILE_PATH = os.path.join(DATA_DIR, 'unrestrict.json')
+
+def _ensure_data_dir():
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
 
 def set_backfill(year: str, month: str):
     """Activates backfill mode by setting the month and year."""
+    _ensure_data_dir()
     data = {
         'active': True,
         'year': year,
@@ -38,6 +44,7 @@ def clear_backfill():
         logger.info("Backfill deactivated.")
 
 def set_unrestricted():
+    _ensure_data_dir()
     with open(UNRESTRICT_FILE_PATH, 'w') as f:
         json.dump({'unrestricted': True}, f)
     logger.info("Backfill unrestricted for all users.")

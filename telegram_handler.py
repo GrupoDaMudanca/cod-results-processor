@@ -4,6 +4,7 @@ import random
 import requests
 import logging
 import re
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,8 @@ from config import (
     TELEGRAM_GET_UPDATES_ENDPOINT,
     TELEGRAM_GET_FILE_ENDPOINT,
     TELEGRAM_DOWNLOAD_FILE_ENDPOINT,
-    TELEGRAM_CHAT_ID
+    TELEGRAM_CHAT_ID,
+    RESULT_FILES_PATH
 )
 
 
@@ -84,7 +86,8 @@ def download_file(file_id: str, message_id: int = None, date: int = None):
     file_name = file_path.split('/')[-1]
     file_endpoint = f'{TELEGRAM_DOWNLOAD_FILE_ENDPOINT}/{file_path}'
 
-    with open(f'results/{file_name}', "wb") as file:
+    os.makedirs(RESULT_FILES_PATH, exist_ok=True)
+    with open(os.path.join(RESULT_FILES_PATH, file_name), "wb") as file:
         file.write(requests.get(file_endpoint).content)
 
     # Save metadata alongside the image for later processing
@@ -98,7 +101,7 @@ def download_file(file_id: str, message_id: int = None, date: int = None):
     if backfill_data:
         metadata['backfill'] = backfill_data
         
-    with open(f'results/{meta_name}', 'w') as meta_file:
+    with open(os.path.join(RESULT_FILES_PATH, meta_name), 'w') as meta_file:
         json.dump(metadata, meta_file)
 
 

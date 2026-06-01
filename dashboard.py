@@ -10,7 +10,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-from config import LATEST_OUTPUT_FILE_PATH, PLAYER_NAMES_FILE_PATH
+from config import LATEST_OUTPUT_FILE_PATH, PLAYER_NAMES_FILE_PATH, RESULT_FILES_PATH
 
 def load_data(target_year=None, target_month=None):
     if not os.path.exists(LATEST_OUTPUT_FILE_PATH):
@@ -32,7 +32,9 @@ def load_data(target_year=None, target_month=None):
     df = df[df['player_name'].notna() & (df['player_name'] != '')]
     return df
 
-def generate_dashboard_image(output_path='results/dashboard.png', target_year=None, target_month=None):
+def generate_dashboard_image(output_path=None, target_year=None, target_month=None):
+    if output_path is None:
+        output_path = os.path.join(RESULT_FILES_PATH, 'dashboard.png')
     df = load_data(target_year, target_month)
     if df.empty:
         logger.warning("No data available to generate dashboard.")
