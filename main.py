@@ -16,6 +16,7 @@ from process_images import process_all
 from consolidate import consolidate_data
 from dashboard import generate_dashboard_image
 from app.telegram import send_photo
+from app.messages import FALLBACK_MESSAGES
 
 
 def cleanup():
@@ -70,16 +71,7 @@ def run_daemon():
                             caption = funny_msg
                         else:
                             import random
-                            fallback_msgs = [
-                                "Não fizeram mais que a obrigação! 🥱",
-                                "Hoje não tenho ninguém pra falar mal, pq todo mundo foi ruim igual... 🤷‍♂️",
-                                "Milagre! Ninguém fez tanta merda a ponto de merecer destaque negativo. 🎉",
-                                "Estão de parabéns: conseguiram ser todos igualmente medianos. 📊",
-                                "Nenhum destaque negativo nessa... Pelo visto o nível tá baixo pra todo mundo. 👀",
-                                "Até que enfim uma partida sem alguém afundando o squad. Ou afundaram juntos? 🤔",
-                                "Ranking atualizado! Sem zoeira hoje porque o advogado do clã não deixou. 🤫"
-                            ]
-                            caption = random.choice(fallback_msgs)
+                            caption = random.choice(FALLBACK_MESSAGES)
                             
                         send_photo(dashboard_path, caption=caption, reply_to_message_id=msg_id)
                     

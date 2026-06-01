@@ -2,25 +2,22 @@ import math
 import random
 
 from app.metrics.metric_reply import MetricReply, MetricResult
+from app.messages import LOW_KILLS_MESSAGES, ZERO_KILLS_MESSAGES
 
 
 class LowQtdKills(MetricReply):
     """Detects players with significantly low kills compared to the group average."""
 
-    MESSAGES = [
-        lambda name: f"Ei {name}, tu tá só assistindo a partida é? 🍿",
-        lambda name: f"Pelo visto o {name} comprou ingresso, não fuzil. 🎟️",
-        lambda name: f"O {name} tá mais parado que cone de trânsito. 🚧",
-        lambda name: f"Chama o {name} pro jogo, ele esqueceu que não é espectador. 📺",
-        lambda name: f"{name}, teu controle tá funcionando ou tá no modo demo? 🎮",
-        lambda name: f"Se o {name} fosse mais parado virava mobília do mapa. 🛋️",
-        lambda name: f"{name}, tá esperando o jogo acabar pra começar a jogar? ⏳",
-        lambda name: f"Alguém avisa o {name} que ele não tá vendo uma live. 📱",
-    ]
-
     def evaluate(self, report: list[dict]) -> MetricResult:
         if not report:
             return MetricResult(score=0, message=None)
+
+        # First, check for absolute zero kills (maximum humiliation)
+        zero_killers = [r for r in report if r.get('kills', -1) == 0 and r.get('is_clan_member', False)]
+        if zero_killers:
+            worst = zero_killers[0]
+            message = random.choice(ZERO_KILLS_MESSAGES)(worst['player_name'])
+            return MetricResult(score=200.0, message=message)
 
         kills_list = [r['kills'] for r in report]
         kills_mean = sum(kills_list) / len(kills_list)
@@ -53,6 +50,6 @@ class LowQtdKills(MetricReply):
         if kills_mean - worst['kills'] < 2:
             return MetricResult(score=0, message=None)
 
-        message = random.choice(self.MESSAGES)(worst['player_name'])
+        message = random.choice(LOW_KILLS_MESSAGES)(worst['player_name'])
 
         return MetricResult(score=normalized_score, message=message)

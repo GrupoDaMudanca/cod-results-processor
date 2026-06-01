@@ -4,11 +4,15 @@ from app.metrics.metric_reply import MetricReply, MetricResult
 from app.metrics.low_kills import LowQtdKills
 from app.metrics.waste_bullet import WasteBullet
 from app.metrics.high_redeploys import HighQuantityRedeploys
+from app.metrics.soft_puncher import SoftPuncher
+from app.metrics.kill_stealer import KillStealer
 
 ALL_METRICS = [
     LowQtdKills(),
     WasteBullet(),
     HighQuantityRedeploys(),
+    SoftPuncher(),
+    KillStealer(),
 ]
 
 

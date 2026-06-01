@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from app.telegram import send_message
+from app.messages import PROCESSING_MESSAGES
 
 from config import (
     TELEGRAM_GET_UPDATES_ENDPOINT,
@@ -85,7 +86,7 @@ def download_file(file_id: str, message_id: int = None, date: int = None):
 
 
 def poll_and_download(timeout: int = 30) -> int:
-    updates = get_updates(timeout=timeout)
+    updates = get_updates(chat_id=int(TELEGRAM_CHAT_ID), timeout=timeout)
 
     if not updates:
         return None
@@ -101,16 +102,6 @@ def poll_and_download(timeout: int = 30) -> int:
         )
 
     last_update = max([update.get('update_id') for update in updates]) if updates else None
-
-    PROCESSING_MESSAGES = [
-        "Aí dento! Bora ver quem carregou e quem foi carregado nessas partidas... 🧐",
-        "Cheguei pro expediente! Puxando as prints pra analisar o desastre... 📊",
-        "Ei macho, guenta aí que já tô lendo essas imagens pra julgar o desempenho de vocês 🤡",
-        "Ajeitando os óculos aqui pra ler essas tabelas... vamos ver quem foi o peso morto de hoje 🪨",
-        "Pera lá, pera lá! Baixando as fotos do tribunal. Já dou o veredito... 👨‍⚖️",
-        "Limpando o cache do cérebro pra processar essas partidas... 🧠",
-        "Ixe, lá vem mais choro! Deixa eu ver quem foi o MVP do gulag dessa vez... ☠️"
-    ]
 
     msg = random.choice(PROCESSING_MESSAGES)
     logger.info(f'Starting processing. Telegram offset read: {last_update}')

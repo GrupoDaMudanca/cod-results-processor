@@ -63,9 +63,9 @@ def generate_dashboard_image(output_path='results/dashboard.png'):
 
     tadinho = player_stats.loc[player_stats['kill_avg'].idxmin()]['player_name']
 
-    # Rouba Kill: highest assists/kills ratio
-    player_stats['rouba_ratio'] = player_stats['assists'] / player_stats['kills'].clip(lower=1)
-    rouba_kill = player_stats.loc[player_stats['rouba_ratio'].idxmax()]['player_name']
+    # Soca Fofo: highest assists/kills ratio
+    player_stats['soca_fofo_ratio'] = player_stats['assists'] / player_stats['kills'].clip(lower=1)
+    soca_fofo = player_stats.loc[player_stats['soca_fofo_ratio'].idxmax()]['player_name']
 
     # Gasta Bala: highest damage/kills ratio for those with above average damage
     avg_damage = player_stats['damage'].mean()
@@ -74,6 +74,13 @@ def generate_dashboard_image(output_path='results/dashboard.png'):
         high_dmg_players = player_stats # fallback
     high_dmg_players['dmg_per_kill'] = high_dmg_players['damage'] / high_dmg_players['kills'].clip(lower=1)
     gasta_bala = high_dmg_players.loc[high_dmg_players['dmg_per_kill'].idxmax()]['player_name']
+
+    # Rouba Kill: lowest damage/kills ratio for those with at least 1 kill
+    players_with_kills = player_stats[player_stats['kills'] > 0].copy()
+    if players_with_kills.empty:
+        players_with_kills = player_stats # fallback
+    players_with_kills['dmg_per_kill'] = players_with_kills['damage'] / players_with_kills['kills'].clip(lower=1)
+    rouba_kill = players_with_kills.loc[players_with_kills['dmg_per_kill'].idxmin()]['player_name']
 
     # ------------------
     # Plotting
@@ -119,11 +126,13 @@ def generate_dashboard_image(output_path='results/dashboard.png'):
     y_r2 = 0.62
     draw_card(x_start, y_r2, w_c, h_c, "Wins", most_wins_str)
     draw_card(x_start + w_c + x_gap, y_r2, w_c, h_c, "Tadinho", tadinho)
-    draw_card(x_start + 2*(w_c + x_gap), y_r2, w_c, h_c, "Rouba Kill", rouba_kill)
+    draw_card(x_start + 2*(w_c + x_gap), y_r2, w_c, h_c, "Soca Fofo", soca_fofo)
 
-    # Row 3 (1 card, center)
+    # Row 3 (2 cards, centered)
     y_r3 = 0.49
-    draw_card(x_start, y_r3, w_c, h_c, "Gasta Bala", gasta_bala)
+    x_start_r3 = (1 - (2*w_c + x_gap)) / 2
+    draw_card(x_start_r3, y_r3, w_c, h_c, "Gasta Bala", gasta_bala)
+    draw_card(x_start_r3 + w_c + x_gap, y_r3, w_c, h_c, "Rouba Kill", rouba_kill)
 
     # ------------------
     # Table

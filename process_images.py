@@ -11,6 +11,12 @@ from app.helpers import read_new_match, write_matches, match_exists
 from app.match import Match
 from app.metrics import evaluate_best_metric
 from app.telegram import send_message
+from app.messages import (
+    DUPLICATE_MESSAGES,
+    ERROR_QUOTA_MESSAGES,
+    ERROR_API_KEY_MESSAGES,
+    ERROR_UNEXPECTED_MESSAGES,
+)
 
 from config import (
     GEMINI_API_KEY,
@@ -153,21 +159,21 @@ def process_files(root_path: str) -> List[Match]:
             if '429' in err_str or 'ResourceExhausted' in err_str or 'quota' in err_str.lower():
                 logger.warning('Gemini API quota exhausted!')
                 send_message(
-                    'Ei bixo, eu tô meio liso ó, fiquei sem tokens 😅 tenta mandar dnv depois',
+                    random.choice(ERROR_QUOTA_MESSAGES),
                     reply_to_message_id=message_id
                 )
                 break
             elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str or '401' in err_str or 'UNAUTHENTICATED' in err_str:
                 logger.error('Gemini API key is invalid or missing.')
                 send_message(
-                    'Vixe macho, perdi meu cérebro 🤡 Tem como tu me dar uma ajudinha?',
+                    random.choice(ERROR_API_KEY_MESSAGES),
                     reply_to_message_id=message_id
                 )
                 break
             else:
                 logger.error(f'Unexpected error processing image {image_path}')
                 send_message(
-                    'Deu um erro doido aqui tentando ler essa imagem... 😵‍💫 tenta de novo!',
+                    random.choice(ERROR_UNEXPECTED_MESSAGES),
                     reply_to_message_id=message_id
                 )
                 continue
@@ -176,15 +182,6 @@ def process_files(root_path: str) -> List[Match]:
         if match_exists(match.id):
             logger.info(f'Match {match.id} already exists, skipping.')
             if message_id:
-                DUPLICATE_MESSAGES = [
-                    "ei keres leyte, já foi processado essa imagem 🥛",
-                    "Aí dento, tá mandando print repetido pra farmar ponto é? 🤡",
-                    "Oxe, essa partida aí eu já contei faz é tempo! Tá achando que eu sou besta? 🐴",
-                    "Print duplicada detectada! Pelo visto alguém tá tentando inflar os stats... 👀",
-                    "Vixe, essa imagem aí já passou pelo tribunal. Manda outra! ⚖️",
-                    "Repetido! Se continuar mandando print velho vou zerar teus pontos 💀",
-                    "Já li essa meu chapa! Tenta a sorte na próxima. 🕵️‍♂️"
-                ]
                 send_message(
                     random.choice(DUPLICATE_MESSAGES),
                     reply_to_message_id=message_id

@@ -2,20 +2,11 @@ import math
 import random
 
 from app.metrics.metric_reply import MetricReply, MetricResult
+from app.messages import WASTE_BULLET_MESSAGES
 
 
 class WasteBullet(MetricReply):
     """Detects players with high damage but poor kill conversion (wasting bullets)."""
-
-    MESSAGES = [
-        lambda name: f"Ei {name}, tá com pena de gastar bala é? 🔫",
-        lambda name: f"{name}, tu foi armado ou levou paintball? 🎨",
-        lambda name: f"O {name} economizou tanto tiro que deve estar guardando pra outra partida. 🧳",
-        lambda name: f"Se o dano do {name} fosse nota, reprovava com louvor. 📉",
-        lambda name: f"Alguém avisa o {name} que o objetivo é atirar nos inimigos. 🎯",
-        lambda name: f"O {name} gastou mais tempo mirando que causando dano. 🔭",
-        lambda name: f"{name}, tua arma tava no modo economia de energia? 🔋",
-    ]
 
     def evaluate(self, report: list[dict]) -> MetricResult:
         if not report:
@@ -65,6 +56,6 @@ class WasteBullet(MetricReply):
         z_score = (worst['damage_per_kill'] - eff_mean) / eff_std_dev if eff_std_dev > 0 else 0
         normalized_score = min(100, max(0, z_score * 25))
 
-        message = random.choice(self.MESSAGES)(worst['player_name'])
+        message = random.choice(WASTE_BULLET_MESSAGES)(worst['player_name'])
 
         return MetricResult(score=normalized_score, message=message)
