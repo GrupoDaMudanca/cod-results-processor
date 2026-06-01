@@ -39,10 +39,6 @@ RESULT_SCHEMA = {
                 "type": "INTEGER",
                 "description": "Pontuação ou Score"
             },
-            "eliminations": {
-                "type": "INTEGER",
-                "description": "Eliminações ou Eliminations"
-            },
             "kills": {
                 "type": "INTEGER",
                 "description": "Baixas ou Kills"
@@ -60,7 +56,7 @@ RESULT_SCHEMA = {
                 "description": "Dano ou Damage"
             }
         },
-        "required": ["raw_player_name", "score", "eliminations", "kills", "assists", "redeploys", "damage"]
+        "required": ["raw_player_name", "score", "kills", "assists", "redeploys", "damage"]
     }
 }
 
@@ -94,6 +90,8 @@ def process_file(image_path: str, date: str = None) -> Match:
 
     prompt = (
         "Read this image for me. Disconsider the line showing the squad's total points. "
+        "IMPORTANT: Do not confuse 'Eliminações' with 'Kills'. In this game, 'Eliminações' = Kills + Assists. "
+        "Therefore, map the column 'Baixas' to the 'kills' field, and completely ignore the 'Eliminações' column. "
         f"Here is a list of expected player names. If you see a name that closely resembles one of these, please use this EXACT spelling: {possible_names_str}"
     )
 

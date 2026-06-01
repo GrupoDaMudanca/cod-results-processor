@@ -14,7 +14,6 @@ class MatchRecord(Serializable, ABC):
         self,
         raw_player_name: str,
         score: int,
-        eliminations: int,
         kills: int,
         assists: int,
         redeploys: int,
@@ -25,7 +24,6 @@ class MatchRecord(Serializable, ABC):
             raw_player_name=raw_player_name
         )
         self.score = score
-        self.eliminations = eliminations
         self.kills = kills
         self.assists = assists
         self.redeploys = redeploys
@@ -37,7 +35,6 @@ class MatchRecord(Serializable, ABC):
         return [
             'player',
             'score',
-            'eliminations',
             'kills',
             'assists',
             'redeploys',

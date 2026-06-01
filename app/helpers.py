@@ -20,7 +20,7 @@ def read_new_match(match_data: list[dict], date: str = None) -> Match:
 
 
 def write_matches(matches: list[Match]) -> None:
-    header = ['match_id', 'player_id', 'player_name', 'score', 'eliminations', 'kills', 'assists', 'redeploys', 'damage', 'date']
+    header = ['match_id', 'player_id', 'player_name', 'score', 'kills', 'assists', 'redeploys', 'damage', 'date']
 
     with open(
         TEMP_OUTPUT_FILE_PATH,
@@ -38,7 +38,6 @@ def write_matches(matches: list[Match]) -> None:
                 'player_id': record.player.id,
                 'player_name': record.player.name,
                 'score': record.score,
-                'eliminations': record.eliminations,
                 'kills': record.kills,
                 'assists': record.assists,
                 'redeploys': record.redeploys,
