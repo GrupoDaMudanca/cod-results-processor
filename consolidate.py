@@ -7,11 +7,17 @@ logger = logging.getLogger(__name__)
 from app.helpers import file_valid
 from config import LATEST_OUTPUT_FILE_PATH, TEMP_OUTPUT_FILES_PATH
 
+from pandas.errors import EmptyDataError
+
 def consolidate_data():
+    latest_df = pd.DataFrame()
     if not file_valid(LATEST_OUTPUT_FILE_PATH):
-        latest_df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
-    else:
-        latest_df = pd.DataFrame()
+        try:
+            latest_df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
+        except EmptyDataError:
+            pass
+            
+    if latest_df.empty:
         logger.warning(f"Warning: {LATEST_OUTPUT_FILE_PATH} doesn't exist or is empty. Creating it.")
 
     full_base_path = os.path.join(os.getcwd(), TEMP_OUTPUT_FILES_PATH)

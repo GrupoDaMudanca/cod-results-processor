@@ -12,11 +12,16 @@ logger = logging.getLogger(__name__)
 
 from config import LATEST_OUTPUT_FILE_PATH, PLAYER_NAMES_FILE_PATH, RESULT_FILES_PATH
 
+from pandas.errors import EmptyDataError
+
 def load_data(target_year=None, target_month=None):
-    if not os.path.exists(LATEST_OUTPUT_FILE_PATH):
+    if not os.path.exists(LATEST_OUTPUT_FILE_PATH) or os.stat(LATEST_OUTPUT_FILE_PATH).st_size == 0:
         return pd.DataFrame()
     
-    df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
+    try:
+        df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
+    except EmptyDataError:
+        return pd.DataFrame()
     
     # Filter by target month or current month
     if target_year and target_month:
