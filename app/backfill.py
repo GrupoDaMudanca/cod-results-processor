@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 BACKFILL_FILE_PATH = 'backfill.json'
+UNRESTRICT_FILE_PATH = 'unrestrict.json'
 
 def set_backfill(year: str, month: str):
     """Activates backfill mode by setting the month and year."""
@@ -35,3 +36,16 @@ def clear_backfill():
     if os.path.exists(BACKFILL_FILE_PATH):
         os.remove(BACKFILL_FILE_PATH)
         logger.info("Backfill deactivated.")
+
+def set_unrestricted():
+    with open(UNRESTRICT_FILE_PATH, 'w') as f:
+        json.dump({'unrestricted': True}, f)
+    logger.info("Backfill unrestricted for all users.")
+
+def clear_unrestricted():
+    if os.path.exists(UNRESTRICT_FILE_PATH):
+        os.remove(UNRESTRICT_FILE_PATH)
+        logger.info("Backfill restricted to admins.")
+
+def is_unrestricted():
+    return os.path.exists(UNRESTRICT_FILE_PATH)

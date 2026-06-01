@@ -164,21 +164,24 @@ def process_files(root_path: str) -> List[Match]:
                 logger.warning('Gemini API quota exhausted!')
                 send_message(
                     random.choice(ERROR_QUOTA_MESSAGES),
-                    reply_to_message_id=message_id
+                    reply_to_message_id=message_id,
+                    msg_type="ERROR_QUOTA"
                 )
                 break
             elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str or '401' in err_str or 'UNAUTHENTICATED' in err_str:
                 logger.error('Gemini API key is invalid or missing.')
                 send_message(
                     random.choice(ERROR_API_KEY_MESSAGES),
-                    reply_to_message_id=message_id
+                    reply_to_message_id=message_id,
+                    msg_type="ERROR_API_KEY"
                 )
                 break
             else:
                 logger.error(f'Unexpected error processing image {image_path}')
                 send_message(
                     random.choice(ERROR_UNEXPECTED_MESSAGES),
-                    reply_to_message_id=message_id
+                    reply_to_message_id=message_id,
+                    msg_type="ERROR_UNEXPECTED"
                 )
                 continue
 
@@ -188,7 +191,8 @@ def process_files(root_path: str) -> List[Match]:
             if message_id:
                 send_message(
                     random.choice(DUPLICATE_MESSAGES),
-                    reply_to_message_id=message_id
+                    reply_to_message_id=message_id,
+                    msg_type="DUPLICATE"
                 )
             continue
 

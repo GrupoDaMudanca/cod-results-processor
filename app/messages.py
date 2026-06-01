@@ -465,47 +465,47 @@ DASHBOARD_FUTURE_MONTH_MESSAGES = [
 BACKFILL_ALREADY_ACTIVE_MESSAGES = [
     "🤡 Tu tem memória de peixe? A máquina do tempo já tá ligada. Termina um antes de começar outro!",
     "🙄 Calma aí, emocionado! Já tem uma operação de resgate rodando. Fecha a primeira antes!",
-    "🧠 Faltou oxigênio no cérebro? Já tem backfill ativo! Manda os prints ou digita /backfill end primeiro.",
+    "🧠 Faltou oxigênio no cérebro? Já tem resgate temporal ativo! Manda os prints ou digita /backfill end primeiro.",
     "🤦‍♂️ Mais perdido que cego em tiroteio. Você já ativou a máquina do tempo, quer abrir duas fendas no espaço-tempo?",
     "🛑 Epa, epa, epa! Já estamos no passado, esqueceu? Finaliza o serviço antes de tentar de novo.",
     "🗑️ Sua memória tá pior que a mira. O portal temporal já tá aberto, acorda pra vida!",
-    "😤 Tá querendo bugar meu sistema, é? Já tem backfill aberto, finaliza antes de iniciar o próximo!",
-    "🥴 Usou o que antes de digitar? Já ativou o backfill antes, zé ruela.",
+    "😤 Tá querendo bugar meu sistema, é? Já tem resgate temporal aberto, finaliza antes de iniciar o próximo!",
+    "🥴 Usou o que antes de digitar? Já ativou o túnel do tempo antes, zé ruela.",
     "⏳ Pera lá! Você já engatou a ré no DeLorean. Finaliza a viagem antes de começar outra.",
-    "🤡 O prêmio de esquecido do ano vai pra você! O backfill JÁ TÁ ATIVADO. Manda /backfill end primeiro.",
+    "🤡 O prêmio de esquecido do ano vai pra você! O DeLorean JÁ TÁ ATIVADO. Manda /backfill end primeiro.",
     "🚫 Negativo! Não vou abrir outro portal temporal enquanto esse estiver aberto. Fecha a porta quando sair!",
     "🥱 Até eu que sou um bot tenho memória melhor que a sua. A máquina do tempo já tá funcionando!",
-    "🔎 Procurando sua coerência... Não achei. O backfill já tá ligado, abençoado!",
-    "💀 Quer me matar de tanto trabalhar? Termina o mês que você já pediu antes de mandar outro backfill.",
-    "👽 Alô? Terra chamando? Você ativou o backfill há pouco tempo. Tá fumado?",
+    "🔎 Procurando sua coerência... Não achei. O túnel do tempo já tá ligado, abençoado!",
+    "💀 Quer me matar de tanto trabalhar? Termina o mês que você já pediu antes de mandar outro resgate temporal.",
+    "👽 Alô? Terra chamando? Você ativou a máquina do tempo há pouco tempo. Tá fumado?",
     "🙄 Eu mereço... O comando já foi dado! Se quiser mudar, finaliza primeiro com o /backfill end.",
-    "😠 Tá de brincadeira com a minha cara? Já estamos no modo backfill. Foca no trabalho!",
+    "😠 Tá de brincadeira com a minha cara? Já estamos no modo resgate. Foca no trabalho!",
     "🧠 404: Memória não encontrada. Já tem um resgate em andamento.",
     "🚪 A porta do tempo só abre uma vez de cada vez. Você já tá lá dentro, doido!",
-    "💸 Se cobrasse por backfill maluco eu tava rico. Já tá ativado, para de flodar o comando!"
+    "💸 Se cobrasse por viagem no tempo maluca eu tava rico. Já tá ativada, para de flodar o comando!"
 ]
 
 BACKFILL_NOT_ACTIVE_MESSAGES = [
     "🤡 Fechar o que, doido? A máquina do tempo nem foi ligada! Tu bebeu?",
     "🙄 Tu tá querendo terminar um trabalho que nem começou. Padrão, né?",
-    "🤦‍♂️ Alguém avisa pra esse emocionado que não tem nenhum backfill rodando.",
+    "🤦‍♂️ Alguém avisa pra esse emocionado que não tem nenhum resgate temporal rodando.",
     "🤪 Tá ouvindo vozes? Ninguém abriu o portal do tempo pra você querer fechar agora.",
     "💀 Pra finalizar o resgate, tu tem que iniciar ele primeiro. A lógica mandou abraços.",
-    "🤷‍♂️ Fim do quê? O DeLorean nem saiu da garagem. Começa um backfill antes de dar end, mongolão.",
-    "😤 Vocês gostam de me testar, né? O backfill NÃO TÁ ATIVO. Vai arrumar o que fazer.",
-    "🔎 Procurando um backfill ativo pra encerrar... e não achei NADA. Acorda!",
-    "🤡 Cuidado pra não tropeçar na própria burrice. Você nem mandou iniciar o backfill ainda!",
+    "🤷‍♂️ Fim do quê? O DeLorean nem saiu da garagem. Começa um resgate antes de dar end, mongolão.",
+    "😤 Vocês gostam de me testar, né? A máquina do tempo NÃO TÁ ATIVA. Vai arrumar o que fazer.",
+    "🔎 Procurando um resgate ativo pra encerrar... e não achei NADA. Acorda!",
+    "🤡 Cuidado pra não tropeçar na própria burrice. Você nem mandou iniciar o túnel do tempo ainda!",
     "🧠 Fritou de vez. Como eu vou fechar a máquina do tempo se ela tá desligada, seu nó cego?",
-    "🛑 Pare imediatamente de digitar besteira! Não tem backfill ativo pra encerrar.",
+    "🛑 Pare imediatamente de digitar besteira! Não tem portal ativo pra encerrar.",
     "🥴 Esse aí tomou um tiro na cabeça no Warzone e ficou lelé. Inicia a parada antes de fechar, poxa.",
-    "🗑️ Seu comando foi jogado no lixo porque NÃO TEM NENHUM BACKFILL ROLANDO.",
+    "🗑️ Seu comando foi jogado no lixo porque NÃO TEM NENHUM RESGATE ROLANDO.",
     "⏳ O tempo tá normal aqui. Ninguém abriu o túnel do passado pra fechar agora.",
-    "🥱 Deixa eu continuar dormindo... Me acorda quando for pra fechar um backfill que EXISTE.",
-    "🚫 Erro 404: Backfill ativo não encontrado. Vê se digita direito na próxima, estagiário.",
+    "🥱 Deixa eu continuar dormindo... Me acorda quando for pra fechar um resgate temporal que EXISTE.",
+    "🚫 Erro 404: DeLorean ativo não encontrado. Vê se digita direito na próxima, estagiário.",
     "😠 Tá se achando o dono do servidor mandando encerrar coisas que nem começaram? Toma tenência!",
-    "👽 De que planeta tu é? Aqui na Terra a gente começa as coisas antes de terminar. O backfill tá desligado!",
+    "👽 De que planeta tu é? Aqui na Terra a gente começa as coisas antes de terminar. O túnel do tempo tá desligado!",
     "🚪 Tentando fechar uma porta que já tá trancada. Você é sempre brilhante assim?",
-    "😂 Eu me divirto com a falta de inteligência de vocês. Inicia o backfill primeiro, abençoado!"
+    "😂 Eu me divirto com a falta de inteligência de vocês. Inicia o DeLorean primeiro, abençoado!"
 ]
 
 DASHBOARD_INVALID_FORMAT_MESSAGES = [
@@ -529,4 +529,50 @@ DASHBOARD_INVALID_FORMAT_MESSAGES = [
     "👽 Em que planeta a data é escrita assim? Usa YYYY/MM ou MM/YYYY pra me ajudar a te ajudar.",
     "🚪 Rala daqui com essa formatação ridícula. Volte quando souber usar YYYY/MM ou MM/YYYY.",
     "😂 Me fez rir com essa tentativa falha. O formato é YYYY/MM ou MM/YYYY. Tenta de novo."
+]
+
+BACKFILL_UNRESTRICTED_MESSAGES = [
+    "🎉 Ah agora essa bagaça virou casa da mãe Joana mesmo! Tá liberada a máquina do tempo pra qualquer zé ruela.",
+    "🔓 Porteira aberta! A chefia enlouqueceu e liberou o resgate temporal pra plebe. Façam a festa.",
+    "🤡 Virou bagunça! Qualquer um pode fuçar no passado agora. Quero só ver a merda que vai dar.",
+    "🐒 Liberaram a jaula! Podem pedir portal temporal à vontade, bando de primatas. A casa caiu.",
+    "🍻 Open bar de nostalgia! A diretoria liberou o comando pra geral. Não me façam me arrepender disso.",
+    "🎪 O circo tá montado e os palhaços (vocês) têm a chave. Viagem no tempo liberada pra todos!",
+    "🚀 É o fim dos tempos. Qualquer novato agora tem o poder de abrir fenda temporal. Liberou geral!",
+    "💸 Promoção relâmpago: resgate grátis pra todos os mortais! Aproveitem a caridade dos admins.",
+    "🥴 A administração bebeu e liberou o acesso. Podem fazer o resgate, bando de folgados.",
+    "🗑️ Transformaram o bot num lixão público. Qualquer um pode jogar tralha velha aqui agora. Liberado!",
+    "🔓 Quebraram os cadeados! O túnel do tempo agora é de domínio público. Usem com sabedoria (duvido).",
+    "🎊 Festa na favela! O chefe deu a louca e agora vocês não precisam mais implorar pra usar o comando.",
+    "🤪 Anarquia instaurada! Não existe mais lei. Todo mundo pode dar start nessa porcaria agora.",
+    "🚪 A porta da esperança foi escancarada! A plebe agora manda no DeLorean.",
+    "🤷‍♂️ Lavando minhas mãos. Liberaram o sistema pra qualquer amador usar. Boa sorte pra nós.",
+    "🔥 Tá pegando fogo bicho! Portal desimpedido. Vamos ver em quanto tempo vocês quebram o bot.",
+    "🎢 Liberado o acesso à montanha-russa temporal! Não precisam mais de autorização da mamãe.",
+    "🤑 Mamata liberada! Qualquer um agora brinca de Deus com as datas. Usem enquanto dura.",
+    "📢 ATENÇÃO: O asilo abriu as portas. A gerência liberou o túnel do tempo pra vocês.",
+    "🔓 Cadeado estourado com sucesso! Agora até o estagiário consegue brincar no passado."
+]
+
+BACKFILL_RESTRICTED_MESSAGES = [
+    "👑 A ditadura voltou! Acabou a bagunça. Agora só os donos do servidor mexem no tempo.",
+    "🔒 Fechou a porteira! Quer voltar no passado? Vai chorar pros admins, a mamata acabou.",
+    "🛑 Acabou a palhaçada. A plebe volta pro seu lugar e o DeLorean é restrito novamente.",
+    "🚔 A polícia chegou e mandou fechar o baile! Somente a chefia tem a chave do resgate agora.",
+    "🙅‍♂️ Deu de bagunça por hoje. O bot voltou a ser VIP, acesso revogado pra geral.",
+    "🏰 A ponte do castelo foi erguida. O povão fica de fora do túnel do tempo a partir de agora.",
+    "🤡 Acabou a farra do boi! Vocês brincaram demais e os pais tomaram a máquina de volta.",
+    "🔐 Cadeado trocado e senha nova. Se não for admin, nem tenta encostar no painel temporal.",
+    "📉 As ações da bagunça caíram. O sistema de resgate voltou a ser exclusividade da diretoria.",
+    "😤 Até que enfim! Não aguentava mais qualquer um mexendo no meu DeLorean. Acesso restrito!",
+    "🚪 Bati a porta na cara de vocês. Túnel trancado a sete chaves novamente. Só VIP passa.",
+    "🚫 Cortaram a energia da festa. Acesso livre desativado. Voltem a mendigar pros admins.",
+    "👮‍♂️ Ordem restaurada! O bot não é bagunça não. Só os deuses do Olimpo viajam no tempo agora.",
+    "🛠️ Sistema blindado com sucesso. Plebeus, por favor, retirem-se da área de lançamento temporal.",
+    "🗑️ Joguei a chave pública no lixo. A farra do passado acabou, voltem a jogar calados.",
+    "🤫 Silêncio no tribunal. O juiz determinou que a bagunça acaba aqui. Comando bloqueado.",
+    "📉 A mamata secou! A torneira de privilégios fechou e a ditadura impera novamente.",
+    "🚷 Placa de 'Não Ultrapasse' colocada. Se não tem crachá da diretoria, não viaja no tempo.",
+    "⚔️ O império contra-ataca! O poder voltou pras mãos de quem manda de verdade.",
+    "🔒 Fim do recreio, crianças. Todo mundo de volta pra sala, a máquina do tempo agora é de adulto."
 ]

@@ -14,9 +14,10 @@ from app.messages import (
     DASHBOARD_START_MESSAGES, DASHBOARD_END_MESSAGES,
     DASHBOARD_NO_DATA_MESSAGES, DASHBOARD_FUTURE_MONTH_MESSAGES,
     BACKFILL_ALREADY_ACTIVE_MESSAGES, BACKFILL_NOT_ACTIVE_MESSAGES,
-    DASHBOARD_INVALID_FORMAT_MESSAGES
+    DASHBOARD_INVALID_FORMAT_MESSAGES, BACKFILL_UNRESTRICTED_MESSAGES,
+    BACKFILL_RESTRICTED_MESSAGES
 )
-from app.backfill import set_backfill, clear_backfill, get_backfill
+from app.backfill import set_backfill, clear_backfill, get_backfill, set_unrestricted, clear_unrestricted, is_unrestricted
 
 from config import (
     TELEGRAM_GET_UPDATES_ENDPOINT,
@@ -119,7 +120,25 @@ def poll_and_download(timeout: int = 30) -> int:
         if text.startswith('/backfill'):
             from_id = str(message.get('from', {}).get('id', ''))
             admins = get_chat_administrators()
-            if from_id not in admins:
+            is_admin = from_id in admins
+            
+            if text == '/backfill unrestrict':
+                if not is_admin:
+                    send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="UNAUTHORIZED")
+                    continue
+                set_unrestricted()
+                send_message(random.choice(BACKFILL_UNRESTRICTED_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="BACKFILL_UNRESTRICTED")
+                continue
+                
+            if text == '/backfill restrict':
+                if not is_admin:
+                    send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="UNAUTHORIZED")
+                    continue
+                clear_unrestricted()
+                send_message(random.choice(BACKFILL_RESTRICTED_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="BACKFILL_RESTRICTED")
+                continue
+
+            if not is_admin and not is_unrestricted():
                 send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="UNAUTHORIZED")
                 continue
                 
