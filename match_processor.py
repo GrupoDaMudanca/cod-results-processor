@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 from app.helpers import read_new_match, write_matches, match_exists
 from app.match import Match
 from app.metrics import evaluate_best_metric
-from app.telegram import send_message
+from app.messengers import get_messenger
 from app.messages import (
     DUPLICATE_MESSAGES,
     ERROR_QUOTA_MESSAGES,
@@ -125,6 +125,7 @@ def process_file(image_path: str, date: str = None) -> Match:
 
 
 def process_files(root_path: str) -> List[Match]:
+    messenger = get_messenger()
     full_base_path = os.path.join(os.getcwd(), root_path)
 
     image_paths = [
@@ -162,7 +163,7 @@ def process_files(root_path: str) -> List[Match]:
             logger.error(f"Full Gemini API exception: {err_str}")
             if '429' in err_str or 'ResourceExhausted' in err_str or 'quota' in err_str.lower():
                 logger.warning('Gemini API quota exhausted!')
-                send_message(
+                messenger.send_message(
                     random.choice(ERROR_QUOTA_MESSAGES),
                     reply_to_message_id=message_id,
                     msg_type="ERROR_QUOTA"
@@ -170,7 +171,7 @@ def process_files(root_path: str) -> List[Match]:
                 break
             elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str or '401' in err_str or 'UNAUTHENTICATED' in err_str:
                 logger.error('Gemini API key is invalid or missing.')
-                send_message(
+                messenger.send_message(
                     random.choice(ERROR_API_KEY_MESSAGES),
                     reply_to_message_id=message_id,
                     msg_type="ERROR_API_KEY"
@@ -178,7 +179,7 @@ def process_files(root_path: str) -> List[Match]:
                 break
             else:
                 logger.error(f'Unexpected error processing image {image_path}')
-                send_message(
+                messenger.send_message(
                     random.choice(ERROR_UNEXPECTED_MESSAGES),
                     reply_to_message_id=message_id,
                     msg_type="ERROR_UNEXPECTED"
@@ -189,7 +190,7 @@ def process_files(root_path: str) -> List[Match]:
         if match_exists(match.id):
             logger.info(f'Match {match.id} already exists, skipping.')
             if message_id:
-                send_message(
+                messenger.send_message(
                     random.choice(DUPLICATE_MESSAGES),
                     reply_to_message_id=message_id,
                     msg_type="DUPLICATE"

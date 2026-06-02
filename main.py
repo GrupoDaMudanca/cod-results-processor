@@ -11,11 +11,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from telegram_handler import poll_and_download, confirm_updates
+from app.listeners import get_listener
 from match_processor import process_all
 from consolidate import consolidate_data
 from dashboard import generate_dashboard_image
-from app.telegram import send_photo
+
 from app.messages import FALLBACK_MESSAGES
 from app.backfill import get_backfill
 
@@ -40,6 +40,9 @@ def cleanup():
 def run_daemon():
     logger.info("Starting Call of Duty results processor bot...")
     
+    # Initialize listener early so WhatsApp Webhook server starts immediately
+    listener = get_listener()
+    
     # Certificar de que as pastas existam ao iniciar
     for folder in [RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH]:
         full_path = os.path.join(os.getcwd(), folder)
@@ -47,16 +50,15 @@ def run_daemon():
         
     while True:
         try:
-            # Poll with timeout for long-polling
-            last_update = poll_and_download(timeout=30)
+            listener = get_listener()
+            last_update = listener.poll_and_download(timeout=30)
             
             if last_update:
                 logger.info(f"Received updates up to offset {last_update}. Starting processing...")
                 
-                # Confirm to telegram immediately so we don't process them again if we crash
-                logger.info("Confirming messages to Telegram...")
-                confirm_updates(last_update)
-                
+                # Confirm messages so we don't process them again if we crash
+                logger.info("Confirming processed messages...")
+                listener.confirm_updates(last_update)
                 # Process the downloaded files
                 processed_any, msg_id, funny_msg = process_all()
                 
@@ -77,10 +79,13 @@ def run_daemon():
                             msg_type = "DASHBOARD_METRIC_REPLY"
                         else:
                             import random
+                            from app.messages import FALLBACK_MESSAGES
                             caption = random.choice(FALLBACK_MESSAGES)
                             msg_type = "FALLBACK"
                             
-                        send_photo(dashboard_path, caption=caption, reply_to_message_id=msg_id, msg_type=msg_type)
+                        from app.messengers import get_messenger
+                        messenger = get_messenger()
+                        messenger.send_photo(dashboard_path, caption=caption, reply_to_message_id=msg_id, msg_type=msg_type)
                     
                 # Clean up local temp files
                 cleanup()

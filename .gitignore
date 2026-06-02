@@ -167,3 +167,5 @@ results/*
 processed/*
 .env.development
 .data/
+
+sessions/
