@@ -182,34 +182,75 @@ def poll_and_download(timeout: int = 30) -> int:
             from datetime import datetime
             
             args = text.strip().split()
-            target_year = None
-            target_month = None
+            start_date = None
+            end_date = None
             
-            if len(args) > 1:
-                date_str = args[1]
+            def parse_date_arg(date_str):
+                # match YYYY
+                match_yyyy = re.match(r'^(\d{4})$', date_str)
+                if match_yyyy:
+                    year = int(match_yyyy.group(1))
+                    now_dt = datetime.now()
+                    if year == now_dt.year:
+                        return datetime(year, 1, 1), datetime(year, now_dt.month, 1)
+                    return datetime(year, 1, 1), datetime(year, 12, 1)
+                    
                 match1 = re.match(r'^(\d{4})/(\d{2})$', date_str)
                 match2 = re.match(r'^(\d{2})/(\d{4})$', date_str)
-                
                 if match1:
-                    target_year = int(match1.group(1))
-                    target_month = int(match1.group(2))
+                    dt = datetime(int(match1.group(1)), int(match1.group(2)), 1)
+                    return dt, dt
                 elif match2:
-                    target_month = int(match2.group(1))
-                    target_year = int(match2.group(2))
-                else:
+                    dt = datetime(int(match2.group(2)), int(match2.group(1)), 1)
+                    return dt, dt
+                return None, None
+
+            if len(args) == 2:
+                s_dt, e_dt = parse_date_arg(args[1])
+                if s_dt is None:
                     send_message(random.choice(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_INVALID_FORMAT")
                     continue
+                start_date = s_dt
+                end_date = e_dt
+            elif len(args) >= 3:
+                if re.match(r'^(\d{4})$', args[1]) or re.match(r'^(\d{4})$', args[2]):
+                    send_message(random.choice(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_INVALID_FORMAT")
+                    continue
+                    
+                s_dt, _ = parse_date_arg(args[1])
+                _, e_dt = parse_date_arg(args[2])
                 
-                # Check if future month
+                if s_dt is None or e_dt is None:
+                    send_message(random.choice(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_INVALID_FORMAT")
+                    continue
+                start_date = s_dt
+                end_date = e_dt
+                
+            if start_date and end_date:
+                # Check inverted dates
+                if start_date > end_date:
+                    from app.messages import DASHBOARD_INVERTED_DATES_MESSAGES
+                    send_message(random.choice(DASHBOARD_INVERTED_DATES_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_INVERTED_DATES")
+                    continue
+                    
+                # Check duration (max 12 inclusive months -> month_diff < 12)
+                month_diff = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+                if month_diff >= 12:
+                    from app.messages import DASHBOARD_TOO_MANY_MONTHS_MESSAGES
+                    send_message(random.choice(DASHBOARD_TOO_MANY_MONTHS_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_TOO_MANY_MONTHS")
+                    continue
+                
                 now = datetime.now()
-                if target_year > now.year or (target_year == now.year and target_month > now.month):
+                # Check future
+                if (start_date.year > now.year or (start_date.year == now.year and start_date.month > now.month)) or \
+                   (end_date.year > now.year or (end_date.year == now.year and end_date.month > now.month)):
                     send_message(random.choice(DASHBOARD_FUTURE_MONTH_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_FUTURE_MONTH")
                     continue
             
             send_message(random.choice(DASHBOARD_START_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_START")
             
             try:
-                dash_path = generate_dashboard_image(target_year=target_year, target_month=target_month)
+                dash_path = generate_dashboard_image(start_date=start_date, end_date=end_date)
                 if dash_path:
                     send_photo(dash_path, caption=random.choice(DASHBOARD_END_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_END")
                 else:

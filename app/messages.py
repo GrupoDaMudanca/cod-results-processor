@@ -485,6 +485,75 @@ DASHBOARD_FUTURE_MONTH_MESSAGES = [
     "😂 Eu tô rindo pra não chorar do teu nível. Bota uma data decente que já tenha passado, vai!"
 ]
 
+DASHBOARD_INVALID_FORMAT_MESSAGES = [
+    "🤡 Tá teclando com o nariz? O formato certo é /dash YYYY, /dash MM/YYYY ou /dash MM/YYYY MM/YYYY.",
+    "🙄 A burrice é contagiante. Aprende a digitar a data direito: YYYY, MM/YYYY ou um período (MM/YYYY MM/YYYY).",
+    "🤦‍♂️ Tu é cego ou se faz? Olha os formatos aceitos: /dash YYYY, /dash MM/YYYY ou com duas datas.",
+    "🤪 De onde tu tirou essa data absurda? O comando aceita ano (YYYY), mês (MM/YYYY) ou um período.",
+    "💀 Tem que desenhar? Bota a data direitinho, preguiçoso: YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "🤷‍♂️ O que tu digitou nem o ChatGPT entende. Formatos: /dash YYYY, /dash MM/YYYY ou /dash MM/YYYY MM/YYYY.",
+    "😤 Para de bater no teclado e digita feito gente: YYYY, MM/YYYY ou um intervalo de dois meses.",
+    "🔎 Procurando lógica no que você digitou... Erro. Usa YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "🤡 O chimpanzé do zoológico formata datas melhor que você. É YYYY, MM/YYYY ou período.",
+    "🧠 Precisamos falar sobre a sua dificuldade com formatos simples... Usa YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "🛑 Não passa daí se não digitar a data certa: /dash YYYY, /dash MM/YYYY ou /dash MM/YYYY MM/YYYY.",
+    "🥴 Tava no bar antes de pedir esse dashboard? Usa os formatos corretos: YYYY, MM/YYYY ou intervalo.",
+    "🗑️ Joguei seu comando no lixo porque a data tá toda torta. Formato: YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "⏳ Perdeu seu tempo e o meu. Digita a data no formato certo (YYYY, MM/YYYY ou intervalo), jumento.",
+    "🥱 Tô com muito sono pra decifrar esse código alienígena. Manda um YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "🚫 Negativo, espertão. Não aceito essa formatação porca. Usa YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "😠 Você acha que eu tenho paciência infinita? Coloca a data no formato YYYY, MM/YYYY ou um período.",
+    "👽 Em que planeta a data é escrita assim? Usa YYYY, MM/YYYY ou MM/YYYY MM/YYYY pra me ajudar a te ajudar.",
+    "🚪 Rala daqui com essa formatação ridícula. Volte quando souber usar YYYY, MM/YYYY ou MM/YYYY MM/YYYY.",
+    "😂 Me fez rir com essa tentativa falha. Os formatos são YYYY, MM/YYYY ou MM/YYYY MM/YYYY. Tenta de novo!"
+]
+
+DASHBOARD_TOO_MANY_MONTHS_MESSAGES = [
+    "🤡 Tu tá achando que eu sou teu escravo pra calcular mais de 12 meses? Vai pedir milagre na igreja!",
+    "🙄 Mais de um ano de estatística? Eu não sou o IBGE, meu filho! Reduz esse período aí.",
+    "🤦‍♂️ O maluco quer um TCC do Warzone! Limite máximo é 12 meses, não abusa da minha CPU.",
+    "🤪 Tá de brincadeira comigo? Quer que eu puxe os dados desde o descobrimento do Brasil? Máximo 1 ano!",
+    "💀 Se eu for calcular tudo isso, meu servidor derrete. Pede um período de até 12 meses, preguiçoso.",
+    "🤷‍♂️ Tá querendo a biografia inteira do clã? O limite é 12 meses, não sou arquivista.",
+    "😤 Vai fazer Enem com esses dados todos? Eu só calculo até 12 meses de uma vez, abaixa essa bola.",
+    "🔎 Procurando trouxa pra fazer esse trabalho pesado... Não sou eu! Reduz isso pra 12 meses no máximo.",
+    "🤡 O cara acha que eu tenho armazenamento infinito. Não rola puxar mais de um ano, ajusta essas datas!",
+    "🧠 O cérebro eletrônico aqui se recusa a trabalhar tanto. Quer me escravizar? O limite é 12 meses.",
+    "🛑 Parado aí! Excesso de meses detectado na bagagem. Só passa quem pedir menos de um ano.",
+    "🥴 Mandou logo um pedido de 3 décadas? Aqui é 12 meses no limite. Vai calcular na mão se quiser mais.",
+    "🗑️ Mandei teu pedido de 300 meses pro lixo. Não faço mais de 12. Tenta de novo com bom senso.",
+    "⏳ Pra processar tudo isso a partida do GTA 6 já teria saído. Limita isso pra no máximo 1 ano!",
+    "🥱 Ler tanto dado assim me dá sono. Corta a preguiça e pede de 12 em 12 meses, folgado.",
+    "🚫 Pedido rejeitado por excesso de folga do usuário. Não puxo mais de 12 meses num painel só.",
+    "😠 Vocês não me pagam nem um salário mínimo pra eu fazer análise de 5 anos! Limite é 1 ano.",
+    "👽 Só sendo de outro planeta pra achar que eu vou ficar aqui puxando 24 meses de dado. É até 12 e ponto.",
+    "🚪 Passou de 12 meses a porta tá fechada. Volte com um pedido mais humilde.",
+    "😂 Até ri do seu pedido abusivo. Achou que ia dar certo pedir mais de um ano? Toma teu erro aí!"
+]
+
+DASHBOARD_INVERTED_DATES_MESSAGES = [
+    "🤡 Tá querendo voltar no tempo, Marty McFly? A data de início tem que vir ANTES da data final!",
+    "🙄 Aulas de calendário: o passado vem antes do futuro. Inverteu as datas, jumento!",
+    "🤦‍♂️ O cara coloca o mês mais recente primeiro e o antigo depois. Aprendeu a contar de trás pra frente?",
+    "🤪 Deu a louca na cronologia! Data inicial maior que a final. Arruma essa bagunça temporal aí.",
+    "💀 A ordem cronológica mandou lembranças. Bota o mês mais antigo primeiro, gênio!",
+    "🤷‍♂️ O bot não viaja no tempo de ré não. Arruma a ordem do mês inicial e final.",
+    "😤 Tá testando minha inteligência ou mostrando a sua falta dela? Inverteu as datas, animal.",
+    "🔎 Procurando onde na história o mês 10 vem antes do mês 02... Erro! Arruma a ordem.",
+    "🤡 Tu leu o calendário de ponta cabeça? A data inicial não pode ser depois da final.",
+    "🧠 Faltou lógica básica aí, hein? Como que o início é mais novo que o fim? Inverteu tudo.",
+    "🛑 Paradoxo temporal detectado! O fim não pode vir antes do começo. Tenta de novo.",
+    "🥴 Tava chapado quando digitou as datas de trás pra frente? Coloca na ordem certa, cronológica.",
+    "🗑️ Deletei seu comando porque a matemática básica chorou agora. O começo vem primeiro, ok?",
+    "⏳ O relógio aqui anda pra frente, amigo. Não coloca data invertida porque eu não aceito.",
+    "🥱 Cansei só de tentar entender como sua mente funciona de trás pra frente. Arruma essas datas.",
+    "🚫 Negativo. Ordem das datas invertida. O passado vem antes do presente, Einstein.",
+    "😠 Não bagunça o calendário! Bota a data inicial menor ou igual a final, para de me irritar.",
+    "👽 Em qual galáxia o tempo corre de trás pra frente? Aqui na Terra você inverteu as datas.",
+    "🚪 A porta pra viajar no tempo de ré tá fechada. Volta e bota o mês inicial na frente.",
+    "😂 Rindo alto do cara que não sabe a ordem dos meses. Arruma a data inicial pra ser menor que a final!"
+]
+
 BACKFILL_ALREADY_ACTIVE_MESSAGES = [
     "🤡 Tu tem memória de peixe? A máquina do tempo já tá ligada. Termina um antes de começar outro!",
     "🙄 Calma aí, emocionado! Já tem uma operação de resgate rodando. Fecha a primeira antes!",
@@ -531,28 +600,6 @@ BACKFILL_NOT_ACTIVE_MESSAGES = [
     "😂 Eu me divirto com a falta de inteligência de vocês. Inicia o DeLorean primeiro, abençoado!"
 ]
 
-DASHBOARD_INVALID_FORMAT_MESSAGES = [
-    "🤡 Tá teclando com o nariz? O formato certo é /dashboard YYYY/MM ou /dashboard MM/YYYY.",
-    "🙄 A burrice é contagiante. Aprende a digitar a data direito: YYYY/MM ou MM/YYYY.",
-    "🤦‍♂️ Tu é cego ou se faz? Olha o formato: /dashboard YYYY/MM ou MM/YYYY.",
-    "🤪 De onde tu tirou essa data absurda? O comando aceita YYYY/MM ou MM/YYYY.",
-    "💀 Tem que desenhar? Bota o ano e o mês direitinho, preguiçoso: YYYY/MM ou MM/YYYY.",
-    "🤷‍♂️ O que tu digitou nem o ChatGPT entende. Formato: /dashboard YYYY/MM ou MM/YYYY.",
-    "😤 Para de bater no teclado e digita feito gente: /dashboard YYYY/MM ou MM/YYYY.",
-    "🔎 Procurando lógica no que você digitou... Erro. O formato é YYYY/MM ou MM/YYYY.",
-    "🤡 O chimpanzé do zoológico formata datas melhor que você. É YYYY/MM ou MM/YYYY.",
-    "🧠 Precisamos falar sobre a sua dificuldade com formatos simples... Usa YYYY/MM ou MM/YYYY.",
-    "🛑 Não passa daí se não digitar a data certa: /dashboard YYYY/MM ou MM/YYYY.",
-    "🥴 Tava no bar antes de pedir esse dashboard? Usa YYYY/MM ou MM/YYYY.",
-    "🗑️ Joguei seu comando no lixo porque a data tá toda torta. Formato YYYY/MM ou MM/YYYY.",
-    "⏳ Perdeu seu tempo e o meu. Digita a data no formato certo (YYYY/MM ou MM/YYYY), jumento.",
-    "🥱 Tô com muito sono pra decifrar esse código alienígena. Manda um YYYY/MM ou MM/YYYY.",
-    "🚫 Negativo, espertão. Não aceito essa formatação porca. Usa YYYY/MM ou MM/YYYY.",
-    "😠 Você acha que eu tenho paciência infinita? Coloca a data no formato YYYY/MM ou MM/YYYY.",
-    "👽 Em que planeta a data é escrita assim? Usa YYYY/MM ou MM/YYYY pra me ajudar a te ajudar.",
-    "🚪 Rala daqui com essa formatação ridícula. Volte quando souber usar YYYY/MM ou MM/YYYY.",
-    "😂 Me fez rir com essa tentativa falha. O formato é YYYY/MM ou MM/YYYY. Tenta de novo."
-]
 
 BACKFILL_UNRESTRICTED_MESSAGES = [
     "🎉 Ah agora essa bagaça virou casa da mãe Joana mesmo! Tá liberada a máquina do tempo pra qualquer zé ruela.",

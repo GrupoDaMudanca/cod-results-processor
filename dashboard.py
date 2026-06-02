@@ -16,7 +16,7 @@ from app.objectives import calculate_monthly_objectives, OBJECTIVE_KEYS
 
 from pandas.errors import EmptyDataError
 
-def load_data(target_year=None, target_month=None):
+def load_data(start_date=None, end_date=None):
     if not os.path.exists(LATEST_OUTPUT_FILE_PATH) or os.stat(LATEST_OUTPUT_FILE_PATH).st_size == 0:
         return pd.DataFrame()
     
@@ -25,22 +25,30 @@ def load_data(target_year=None, target_month=None):
     except EmptyDataError:
         return pd.DataFrame()
     
-    # Filter by target month or current month
-    if target_year and target_month:
-        month_str = f"{str(target_month).zfill(2)}/{target_year}"
-    else:
-        current_date = datetime.now()
-        month_str = current_date.strftime('%m/%Y')
+    if not start_date or not end_date:
+        now = datetime.now()
+        start_date = datetime(now.year, now.month, 1)
+        end_date = start_date
     
     if 'date' in df.columns:
-        df = df[df['date'].astype(str).str.endswith(month_str, na=False)]
+        df['parsed_date'] = pd.to_datetime(df['date'], format='%d/%m/%Y', errors='coerce')
+        start_period = pd.to_datetime(start_date).to_period('M')
+        end_period = pd.to_datetime(end_date).to_period('M')
+        df = df[(df['parsed_date'].dt.to_period('M') >= start_period) & 
+                (df['parsed_date'].dt.to_period('M') <= end_period)]
     
     return df
 
-def generate_dashboard_image(output_path=None, target_year=None, target_month=None):
+def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
     if output_path is None:
         output_path = os.path.join(RESULT_FILES_PATH, 'dashboard.png')
-    df = load_data(target_year, target_month)
+        
+    if not start_date or not end_date:
+        now = datetime.now()
+        start_date = datetime(now.year, now.month, 1)
+        end_date = start_date
+
+    df = load_data(start_date, end_date)
     if df.empty:
         logger.warning("No data available to generate dashboard.")
         return None
@@ -145,17 +153,21 @@ def generate_dashboard_image(output_path=None, target_year=None, target_month=No
     ax.axis('off')
 
     # Title
-    if target_year and target_month:
-        month_obj = datetime.strptime(f"{target_month}", "%m")
-        month_name = month_obj.strftime('%B').capitalize()
-        year = str(target_year)
+    PT_MONTHS = {
+        1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+        5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+        9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+    }
+    
+    if start_date.year == end_date.year and start_date.month == end_date.month:
+        title_text = f"{PT_MONTHS[start_date.month]} / {start_date.year}"
+    elif start_date.year == end_date.year and start_date.month == 1 and end_date.month == 12:
+        title_text = f"Ano de {start_date.year}"
     else:
-        current_date = datetime.now()
-        month_name = current_date.strftime('%B').capitalize()
-        year = current_date.strftime('%Y')
+        title_text = f"{PT_MONTHS[start_date.month]}/{start_date.year} a {PT_MONTHS[end_date.month]}/{end_date.year}"
     
     plt.text(0.5, y_pct(0.3), "Destaques de Ressurgência", color="white", fontsize=28, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
-    plt.text(0.5, y_pct(0.8), f"{month_name} / {year}", color="#a0a0b0", fontsize=18, ha='center', va='center', transform=ax.transAxes)
+    plt.text(0.5, y_pct(0.8), title_text, color="#a0a0b0", fontsize=18, ha='center', va='center', transform=ax.transAxes)
 
     # ------------------
     # Section 1: Highlights
