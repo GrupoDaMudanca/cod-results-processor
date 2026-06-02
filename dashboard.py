@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 from config import LATEST_OUTPUT_FILE_PATH, PLAYER_NAMES_FILE_PATH, RESULT_FILES_PATH
 
-from app.objectives import calculate_monthly_objectives, OBJECTIVE_KEYS
+from app.objectives import calculate_objectives, OBJECTIVE_KEYS
 
 from pandas.errors import EmptyDataError
 
@@ -59,7 +59,7 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
     valid_clan_names = list(clan_mapping.keys())
     
     # Pass the full df (including non-clan members) to objectives for accurate squad kills
-    objs_list = calculate_monthly_objectives(df, valid_clan_names)
+    objs_list = calculate_objectives(df, valid_clan_names)
 
     # Filter to only clan members for the rest of the dashboard
     df = df[df['player_name'].isin(valid_clan_names)]
@@ -223,7 +223,7 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
                          ec="none", fc="#16213e", transform=ax.transAxes)
     ax.add_patch(obj_box)
 
-    plt.text(0.05, y_pct(obj_top_inch + 0.4), "Monthly Objectives", color="#e94560", fontsize=16, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
+    plt.text(0.05, y_pct(obj_top_inch + 0.4), "Objectives", color="#e94560", fontsize=16, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
 
     y_obj_headers = obj_top_inch + 1.0
     x_obj_keys = [0.2 + i * (0.7 / len(OBJECTIVE_KEYS)) for i in range(len(OBJECTIVE_KEYS))]
@@ -231,7 +231,7 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
 
     plt.text(0.05, y_pct(y_obj_headers), "Player", color="#ffb86c", fontsize=12, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
     for i, key in enumerate(OBJECTIVE_KEYS):
-        plt.text(x_obj_keys[i], y_obj_headers, key, color="#ffb86c", fontsize=10, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
+        plt.text(x_obj_keys[i], y_pct(y_obj_headers), key, color="#ffb86c", fontsize=10, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
     plt.text(x_obj_total, y_pct(y_obj_headers), "Objetivos", color="#ffb86c", fontsize=12, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
 
     plt.plot([0.05, 0.95], [y_pct(y_obj_headers + 0.25), y_pct(y_obj_headers + 0.25)], color="#33334d", lw=1, transform=ax.transAxes)

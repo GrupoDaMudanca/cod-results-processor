@@ -7,7 +7,7 @@ OBJECTIVE_KEYS = [
     "25SK", "32SK", "36SK", "40SK"
 ]
 
-def calculate_monthly_objectives(df: pd.DataFrame, valid_clan_names: list[str]) -> list[dict]:
+def calculate_objectives(df: pd.DataFrame, valid_clan_names: list[str]) -> list[dict]:
     """
     Calculates the monthly objectives for each clan member.
     Returns a list of dicts with player_name, total_completed, and the objectives dict.
