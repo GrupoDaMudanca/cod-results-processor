@@ -53,19 +53,6 @@ class WhatsAppListener(BaseListener):
         logger.info(f"Downloading WhatsApp media for {message_id}")
         
         try:
-            from app.messengers import get_messenger
-            from app.messages import PROCESSING_MESSAGES
-            import random
-            messenger = get_messenger()
-            messenger.send_message(
-                random.choice(PROCESSING_MESSAGES),
-                reply_to_message_id=message_id_obj.get('_serialized'),
-                msg_type="PROCESSING"
-            )
-        except Exception as e:
-            logger.error(f"Failed to send processing message: {e}")
-            
-        try:
             # For downloading media, the API expects the short ID, not the _serialized ID
             short_id = message_id_obj.get('id')
             chat_id = message.get('from')
@@ -116,6 +103,7 @@ class WhatsAppListener(BaseListener):
         logger.info(f"Processing WhatsApp batch of {len(batch)} messages.")
         
         has_photo = False
+        processing_msg_sent = False
         for message in batch:
             text = message.get('body', '')
             message_id_obj = message.get('id', {})
@@ -147,6 +135,21 @@ class WhatsAppListener(BaseListener):
                 
             if message.get('hasMedia', False):
                 has_photo = True
+                
+                if not processing_msg_sent:
+                    try:
+                        from app.messengers import get_messenger
+                        from app.messages import PROCESSING_MESSAGES
+                        import random
+                        messenger = get_messenger()
+                        messenger.send_message(
+                            random.choice(PROCESSING_MESSAGES),
+                            msg_type="PROCESSING"
+                        )
+                        processing_msg_sent = True
+                    except Exception as e:
+                        logger.error(f"Failed to send processing message: {e}")
+                        
                 self._download_whatsapp_media(message)
                 
         if has_photo:

@@ -26,5 +26,5 @@ services:
       - BASE_WEBHOOK_URL=http://cod-result-processor:5000/webhook
       - ENABLE_WEBHOOK=TRUE
     volumes:
-      - ./sessions:/usr/src/app/sessions
+      - ./.data/wpp_sessions:/usr/src/app/sessions
     restart: unless-stopped

@@ -87,9 +87,10 @@ class TelegramListener(BaseListener):
         if not updates:
             return None
 
-        logger.info(f"Updates received: {updates}")
+        logger.info(f"Processing batch of {len(updates)} updates.")
 
         has_photo = False
+        processing_msg_sent = False
         for update in updates:
             message = update.get('message')
             if not message:
@@ -110,18 +111,19 @@ class TelegramListener(BaseListener):
                 has_photo = True
                 logger.info("Found photo in message! Downloading...")
                 
-                try:
-                    from app.messengers import get_messenger
-                    from app.messages import PROCESSING_MESSAGES
-                    import random
-                    messenger = get_messenger()
-                    messenger.send_message(
-                        random.choice(PROCESSING_MESSAGES),
-                        reply_to_message_id=str(message_id),
-                        msg_type="PROCESSING"
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to send processing message: {e}")
+                if not processing_msg_sent:
+                    try:
+                        from app.messengers import get_messenger
+                        from app.messages import PROCESSING_MESSAGES
+                        import random
+                        messenger = get_messenger()
+                        messenger.send_message(
+                            random.choice(PROCESSING_MESSAGES),
+                            msg_type="PROCESSING"
+                        )
+                        processing_msg_sent = True
+                    except Exception as e:
+                        logger.error(f"Failed to send processing message: {e}")
                     
                 file_id = message.get('photo')[-1].get('file_id')
                 date = message.get('date')
