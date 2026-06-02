@@ -186,16 +186,7 @@ WASTE_BULLET_MESSAGES = [
     lambda name: f"Aviso aos pombos do Warzone: cuidado que o {name} tá atirando pra cima! 🐦☁️",
 ]
 
-HIGH_REDEPLOYS_MESSAGES = [
-    lambda name: f"O {name} tava mais escondido que Mister M em show de mágica 🎩",
-    lambda name: f"O {name} tava mais sumido que Wi-Fi em zona rural 📡",
-    lambda name: f"O {name} tava mais escondido que controle remoto em dia de jogo 📺",
-    lambda name: f"O {name} tava mais difícil de achar que agulha no palheiro 🪡",
-    lambda name: f"O {name} tava mais desaparecido que férias no fim do mês 🏝️",
-    lambda name: f"O {name} tava mais escondido que spoiler de série boa 🤫",
-    lambda name: f"O {name} tava mais sumido que dinheiro depois do 5º dia útil 💸",
-    lambda name: f"O {name} tava mais escondido que senha de Wi-Fi em casa de visita 🔐",
-    lambda name: f"O {name} tava mais off que luz em dia de tempestade ⚡",
+LOW_REDEPLOYS_MESSAGES = [
     lambda name: f"O {name} passou mais tempo no paraquedas do que com a arma na mão! 🪂⏱️",
     lambda name: f"O {name} tem cartão fidelidade no Gulag, carimba a cada 5 minutos! 🎫👻",
     lambda name: f"Aviso aéreo: cuidado com o {name} caindo do céu pela 15ª vez na partida! ⚠️☁️",
@@ -207,6 +198,38 @@ HIGH_REDEPLOYS_MESSAGES = [
     lambda name: f"A gravidade não gosta do {name}, sempre puxando ele pro chão de volta! 🌍⬇️",
     lambda name: f"O {name} patrocinou o avião de redeploy, virou passageiro VIP! 💺✈️",
     lambda name: f"Se juntar todas as quedas do {name}, dá pra montar um filme de ação só dele caindo! 🎬🪂",
+    lambda name: f"Tá achando que é o Neymar? O {name} passa mais tempo caindo no chão do que jogando de verdade! ⚽🚑",
+    lambda name: f"O {name} é o verdadeiro menino Ney do Warzone: tomou um ventinho, já tá caindo! 🍃🤕",
+    lambda name: f"Chamem a força aérea! O {name} virou aviador profissional de tanto cair do céu! 🛩️🫡",
+    lambda name: f"O sonho do {name} era ser paraquedista, porque atirar que é bom, nada! 🪂☁️",
+    lambda name: f"O {name} cai tanto que já fez um buraco no mapa de Al Mazrah! 🕳️📉",
+    lambda name: f"Avisem pro {name} que o paraquedas não tem seguro obrigatório! De tanto que ele cai, vai ficar caro! 💸🪂",
+    lambda name: f"O {name} tá fazendo speedrun de Gulag. Mal volta pro mapa e já tá na fila do 1v1! ⏳💀",
+    lambda name: f"Deixa o paraquedas do {name} permanentemente aberto, ele não fica 1 minuto com o pé no chão! 👣🚫",
+    lambda name: f"Chão é lava? O {name} passa tanto tempo caindo do céu que até esqueceu como anda! 🌋☁️",
+]
+
+HIGH_REDEPLOYS_MESSAGES = [
+    lambda name: f"O {name} é o verdadeiro Highlander, não morre por nada! ⚔️🛡️",
+    lambda name: f"Pode chamar o {name} de Âncora do time, segurou a onda pra todo mundo voltar! ⚓🚢",
+    lambda name: f"O {name} tem alergia a bala, desviou de todas pra manter o time no jogo! 🏃‍♂️💨",
+    lambda name: f"Graças ao {name}, o time teve mais vidas que um gato! Sobrevivente nato! 🐈📈",
+    lambda name: f"Se não fosse o {name} ficar vivo escondido no banheiro abraçado com a escopeta, o squad tinha ido de base cedo! 🚽😂",
+    lambda name: f"O {name} é o verdadeiro Rato de Esgoto, não tem vergonha nenhuma de fugir e se entocar! 🐀🕳️",
+    lambda name: f"Avisem pro {name} que o jogo é de tiro, não de esconde-esconde! Covarde de marca maior! 🙈🏃",
+    lambda name: f"O {name} instalou uma barraca, fez fogueira e ficou o jogo todo de camper! Sobrevivente 10/10! 🏕️🔥",
+    lambda name: f"Dizem que o {name} só foi visto na partida quando o gás apertou ele no canto do mapa! 🏃💨",
+    lambda name: f"Enquanto o time trocava tiro, o {name} tava procurando imóvel no mapa pra acampar! ⛺🏡",
+    lambda name: f"O {name} virou uma moita na partida, de tão escondido que ficou pra não morrer! 🌿🥷",
+    lambda name: f"O {name} jogou de esconde-esconde e ganhou medalha de ouro! Ninguém achou o rato! 🥇🐀",
+    lambda name: f"Alguém avisa pro {name} que ele não ganha bônus por terminar a partida sem sujar o colete! 🧼🛡️",
+    lambda name: f"O {name} tava acampando tanto que já devia tá assando marshmallow na fogueira! 🏕️🔥",
+    lambda name: f"A tática do {name} é fingir de morto pra se salvar. Oscar de melhor ator de bueiro pra ele! 🎭💀",
+    lambda name: f"O {name} ficou tão quieto e escondido que os inimigos acharam que a partida tava vazia! 🔇🐢",
+    lambda name: f"Se covardia pagasse imposto, o {name} já tinha sido preso pela Receita Federal! 🏃‍♂️💸",
+    lambda name: f"O {name} não troca tiro, ele foge, tranca a porta e espera a safe fechar. Zé Casinha supremo! 🚪🔒",
+    lambda name: f"Dizem que o {name} terminou a partida com o controle intacto, porque nem encostou no botão de atirar! 🎮🐀",
+    lambda name: f"O {name} sobreviveu muito, mas foi tudo graças às táticas avançadas de Rato de Bueiro! 🐀🧀",
 ]
 
 SOFT_PUNCHER_MESSAGES = [

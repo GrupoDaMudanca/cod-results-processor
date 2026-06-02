@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 from config import LATEST_OUTPUT_FILE_PATH, PLAYER_NAMES_FILE_PATH, RESULT_FILES_PATH
 
+from app.objectives import calculate_monthly_objectives, OBJECTIVE_KEYS
+
 from pandas.errors import EmptyDataError
 
 def load_data(target_year=None, target_month=None):
@@ -33,8 +35,6 @@ def load_data(target_year=None, target_month=None):
     if 'date' in df.columns:
         df = df[df['date'].astype(str).str.endswith(month_str, na=False)]
     
-    # Filter only clan members (those with a mapped player_name)
-    df = df[df['player_name'].notna() & (df['player_name'] != '')]
     return df
 
 def generate_dashboard_image(output_path=None, target_year=None, target_month=None):
@@ -49,6 +49,11 @@ def generate_dashboard_image(output_path=None, target_year=None, target_month=No
     with open(PLAYER_NAMES_FILE_PATH, 'r') as f:
         clan_mapping = json.load(f)
     valid_clan_names = list(clan_mapping.keys())
+    
+    # Pass the full df (including non-clan members) to objectives for accurate squad kills
+    objs_list = calculate_monthly_objectives(df, valid_clan_names)
+
+    # Filter to only clan members for the rest of the dashboard
     df = df[df['player_name'].isin(valid_clan_names)]
 
     if df.empty:
@@ -65,7 +70,8 @@ def generate_dashboard_image(output_path=None, target_year=None, target_month=No
         wins=('match_id', 'nunique'),
         kills=('kills', 'sum'),
         damage=('damage', 'sum'),
-        assists=('assists', 'sum') if 'assists' in df.columns else ('kills', 'sum') # fallback
+        assists=('assists', 'sum') if 'assists' in df.columns else ('kills', 'sum'), # fallback
+        redeploys=('redeploys', 'sum') if 'redeploys' in df.columns else ('kills', 'sum') # fallback
     ).reset_index()
 
     player_stats['kill_avg'] = player_stats['kills'] / player_stats['wins']
@@ -74,36 +80,66 @@ def generate_dashboard_image(output_path=None, target_year=None, target_month=No
     # Sort for table
     player_stats = player_stats.sort_values(by='kills', ascending=False)
 
-    # Calculate Highlights
-    most_wins_row = player_stats.loc[player_stats['wins'].idxmax()]
-    most_wins_str = f"{most_wins_row['player_name']}:{int(most_wins_row['wins'])}"
+    player_stats['redeploy_avg'] = player_stats.get('redeploys', player_stats['kills']) / player_stats['wins']
+    player_stats['assist_avg'] = player_stats['assists'] / player_stats['wins']
+    player_stats['dmg_per_kill'] = player_stats['damage'] / player_stats['kills'].replace(0, 1)
 
-    tadinho = player_stats.loc[player_stats['kill_avg'].idxmin()]['player_name']
+    # Calculate Highlights using pure simple averages
+    top_kills = player_stats.nlargest(3, 'kills')
+    total_kills_list = [(r['player_name'], str(int(r['kills']))) for _, r in top_kills.iterrows()]
 
-    # Soca Fofo: highest assists/kills ratio
-    player_stats['soca_fofo_ratio'] = player_stats['assists'] / player_stats['kills'].clip(lower=1)
-    soca_fofo = player_stats.loc[player_stats['soca_fofo_ratio'].idxmax()]['player_name']
+    top_avg_kills = player_stats.nlargest(3, 'kill_avg')
+    avg_kills_list = [(r['player_name'], f"{r['kill_avg']:.1f}") for _, r in top_avg_kills.iterrows()]
 
-    # Gasta Bala: highest damage/kills ratio for those with above average damage
-    avg_damage = player_stats['damage'].mean()
-    high_dmg_players = player_stats[player_stats['damage'] > avg_damage].copy()
-    if high_dmg_players.empty:
-        high_dmg_players = player_stats # fallback
-    high_dmg_players['dmg_per_kill'] = high_dmg_players['damage'] / high_dmg_players['kills'].clip(lower=1)
-    gasta_bala = high_dmg_players.loc[high_dmg_players['dmg_per_kill'].idxmax()]['player_name']
+    top_wins = player_stats.nlargest(3, 'wins')
+    wins_list = [(r['player_name'], str(int(r['wins']))) for _, r in top_wins.iterrows()]
 
-    # Rouba Kill: lowest damage/kills ratio for those with at least 1 kill
-    players_with_kills = player_stats[player_stats['kills'] > 0].copy()
-    if players_with_kills.empty:
-        players_with_kills = player_stats # fallback
-    players_with_kills['dmg_per_kill'] = players_with_kills['damage'] / players_with_kills['kills'].clip(lower=1)
-    rouba_kill = players_with_kills.loc[players_with_kills['dmg_per_kill'].idxmin()]['player_name']
+    top_high_redeploys = player_stats.nlargest(3, 'redeploy_avg')
+    high_redeploys_list = [(r['player_name'], f"{r['redeploy_avg']:.1f}") for _, r in top_high_redeploys.iterrows()]
+
+    top_waste_bullet = player_stats.nlargest(3, 'damage_avg')
+    waste_bullet_list = [(r['player_name'], f"{r['damage_avg']:.0f}") for _, r in top_waste_bullet.iterrows()]
+
+    top_kill_stealer = player_stats.nsmallest(3, 'dmg_per_kill')
+    kill_stealer_list = [(r['player_name'], f"{r['dmg_per_kill']:.0f}") for _, r in top_kill_stealer.iterrows()]
+
+    top_low_redeploys = player_stats.nsmallest(3, 'redeploy_avg')
+    low_redeploys_list = [(r['player_name'], f"{r['redeploy_avg']:.1f}") for _, r in top_low_redeploys.iterrows()]
+
+    top_soft_puncher = player_stats.nlargest(3, 'assist_avg')
+    soft_puncher_list = [(r['player_name'], f"{r['assist_avg']:.1f}") for _, r in top_soft_puncher.iterrows()]
+
+    top_low_kills = player_stats.nsmallest(3, 'kill_avg')
+    low_kills_list = [(r['player_name'], f"{r['kill_avg']:.1f}") for _, r in top_low_kills.iterrows()]
+
+    # Objectives were already calculated above using the full df
+
+    # ------------------
+    # Dynamic Layout Calculation
+    # ------------------
+    num_players = len(player_stats)
+    
+    # Define heights in "inches"
+    H_top = 5.0
+    H_obj = 1.5 + (num_players * 0.35)
+    H_tbl = 1.0 + (num_players * 0.35)
+    H_margin = 0.5
+    
+    H_total = H_top + H_obj + H_tbl + H_margin
+    
+    # Dynamically adjust width to keep a pleasant aspect ratio
+    # If it's short, make it narrower so it doesn't look stretched horizontally.
+    # If it's tall, make it wider up to a limit.
+    W_total = max(14.0, min(18.0, H_total * 1.3))
+    
+    def y_pct(inches_from_top):
+        return 1.0 - (inches_from_top / H_total)
 
     # ------------------
     # Plotting
     # ------------------
     plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(8, 12))
+    fig, ax = plt.subplots(figsize=(W_total, H_total))
     fig.patch.set_facecolor('#1a1a2e')
     ax.set_facecolor('#1a1a2e')
     ax.axis('off')
@@ -118,64 +154,106 @@ def generate_dashboard_image(output_path=None, target_year=None, target_month=No
         month_name = current_date.strftime('%B').capitalize()
         year = current_date.strftime('%Y')
     
-    plt.text(0.5, 0.95, "Destaques de Ressurgência", color="white", fontsize=24, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
-    plt.text(0.5, 0.91, f"{month_name} / {year}", color="#a0a0b0", fontsize=16, ha='center', va='center', transform=ax.transAxes)
-
-    # Function to draw a card
-    def draw_card(x, y, w, h, title, value, title_color="#ffb86c", val_color="white"):
-        # Box
-        box = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.03", 
-                             ec="none", fc="#16213e", transform=ax.transAxes)
-        ax.add_patch(box)
-        # Title
-        plt.text(x + w/2, y + h*0.7, title, color=title_color, fontsize=12, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
-        # Value
-        plt.text(x + w/2, y + h*0.3, value, color=val_color, fontsize=16, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
-
-    # Cards (7 total)
-    # Row 1 (3 cards)
-    y_r1 = 0.75
-    h_c = 0.10
-    w_c = 0.25
-    x_gap = 0.05
-    x_start = (1 - (3*w_c + 2*x_gap)) / 2
-
-    draw_card(x_start, y_r1, w_c, h_c, "Total Plays", str(total_plays))
-    draw_card(x_start + w_c + x_gap, y_r1, w_c, h_c, "Total Kills", str(total_kills))
-    draw_card(x_start + 2*(w_c + x_gap), y_r1, w_c, h_c, "Average Kills", f"{avg_kills:.1f}")
-
-    # Row 2 (3 cards)
-    y_r2 = 0.62
-    draw_card(x_start, y_r2, w_c, h_c, "Wins", most_wins_str)
-    draw_card(x_start + w_c + x_gap, y_r2, w_c, h_c, "Tadinho", tadinho)
-    draw_card(x_start + 2*(w_c + x_gap), y_r2, w_c, h_c, "Soca Fofo", soca_fofo)
-
-    # Row 3 (2 cards, centered)
-    y_r3 = 0.49
-    x_start_r3 = (1 - (2*w_c + x_gap)) / 2
-    draw_card(x_start_r3, y_r3, w_c, h_c, "Gasta Bala", gasta_bala)
-    draw_card(x_start_r3 + w_c + x_gap, y_r3, w_c, h_c, "Rouba Kill", rouba_kill)
+    plt.text(0.5, y_pct(0.3), "Destaques de Ressurgência", color="white", fontsize=28, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
+    plt.text(0.5, y_pct(0.8), f"{month_name} / {year}", color="#a0a0b0", fontsize=18, ha='center', va='center', transform=ax.transAxes)
 
     # ------------------
-    # Table
+    # Section 1: Highlights
     # ------------------
-    # We will draw a custom table using text elements to have full styling control
-    y_tbl_start = 0.40
+    def draw_highlight_col(x, y_inch, title, items):
+        plt.text(x, y_pct(y_inch), title, color="#ffb86c", fontsize=14, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
+        for i in range(3):
+            item_y_inch = y_inch + 0.35 + (i * 0.35)
+            if i < len(items):
+                name, val = items[i]
+            else:
+                name, val = "-", "-"
+            plt.text(x, y_pct(item_y_inch), name, color="white", fontsize=12, ha='left', va='center', transform=ax.transAxes)
+            plt.text(x + 0.12, y_pct(item_y_inch), val, color="#a0a0b0", fontsize=12, ha='right', va='center', transform=ax.transAxes)
+        
+        # Draw a subtle vertical separator line
+        plt.plot([x + 0.15, x + 0.15], [y_pct(y_inch - 0.2), y_pct(y_inch + 1.2)], color="#33334d", lw=1, transform=ax.transAxes)
+
+    # Background Box for Highlights
+    hl_top_inch = 1.3
+    hl_bottom_inch = 4.8
+    hl_box = FancyBboxPatch((0.03, y_pct(hl_bottom_inch)), 0.94, (hl_bottom_inch - hl_top_inch) / H_total, 
+                         boxstyle="round,pad=0.02,rounding_size=0.03", mutation_aspect=W_total/H_total,
+                         ec="none", fc="#16213e", transform=ax.transAxes)
+    ax.add_patch(hl_box)
     
-    headers = ["Atleta", "Wins", "Kill Avg", "Kills", "Damage Avg", "Damage"]
-    x_cols = [0.1, 0.28, 0.42, 0.58, 0.75, 0.90]
-    aligns = ['left', 'center', 'center', 'center', 'center', 'right']
+    plt.text(0.05, y_pct(hl_top_inch + 0.3), "Ressurgence Highlights", color="#e94560", fontsize=16, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
+
+    x_cols_hl = [0.05, 0.24, 0.43, 0.62, 0.81]
+    y_hl_r1 = hl_top_inch + 0.8
+    y_hl_r2 = hl_top_inch + 2.3
+
+    draw_highlight_col(x_cols_hl[0], y_hl_r1, "Total Kills", total_kills_list)
+    draw_highlight_col(x_cols_hl[1], y_hl_r1, "Avg Kills", avg_kills_list)
+    draw_highlight_col(x_cols_hl[2], y_hl_r1, "Wins", wins_list)
+    draw_highlight_col(x_cols_hl[3], y_hl_r1, "Rato de Esgoto", high_redeploys_list)
+    draw_highlight_col(x_cols_hl[4], y_hl_r1, "Gasta Bala", waste_bullet_list)
+
+    draw_highlight_col(x_cols_hl[0], y_hl_r2, "Rouba Kill", kill_stealer_list)
+    draw_highlight_col(x_cols_hl[1], y_hl_r2, "Neymar", low_redeploys_list)
+    draw_highlight_col(x_cols_hl[2], y_hl_r2, "Atira Fofo", soft_puncher_list)
+    draw_highlight_col(x_cols_hl[3], y_hl_r2, "Tadinho", low_kills_list)
+
+
+    # ------------------
+    # Section 2: Objectives
+    # ------------------
+    obj_top_inch = H_top + 0.2
+    obj_bottom_inch = obj_top_inch + H_obj
+    
+    obj_box = FancyBboxPatch((0.03, y_pct(obj_bottom_inch)), 0.94, H_obj / H_total, 
+                         boxstyle="round,pad=0.02,rounding_size=0.03", mutation_aspect=W_total/H_total,
+                         ec="none", fc="#16213e", transform=ax.transAxes)
+    ax.add_patch(obj_box)
+
+    plt.text(0.05, y_pct(obj_top_inch + 0.4), "Monthly Objectives", color="#e94560", fontsize=16, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
+
+    y_obj_headers = obj_top_inch + 1.0
+    x_obj_keys = [0.2 + i * (0.7 / len(OBJECTIVE_KEYS)) for i in range(len(OBJECTIVE_KEYS))]
+    x_obj_total = 0.93
+
+    plt.text(0.05, y_pct(y_obj_headers), "Player", color="#ffb86c", fontsize=12, fontweight='bold', ha='left', va='center', transform=ax.transAxes)
+    for i, key in enumerate(OBJECTIVE_KEYS):
+        plt.text(x_obj_keys[i], y_obj_headers, key, color="#ffb86c", fontsize=10, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
+    plt.text(x_obj_total, y_pct(y_obj_headers), "Objetivos", color="#ffb86c", fontsize=12, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
+
+    plt.plot([0.05, 0.95], [y_pct(y_obj_headers + 0.25), y_pct(y_obj_headers + 0.25)], color="#33334d", lw=1, transform=ax.transAxes)
+
+    y_obj_row = y_obj_headers + 0.6
+    for p_obj in objs_list:
+        plt.text(0.05, y_pct(y_obj_row), p_obj['player_name'], color="white", fontsize=11, ha='left', va='center', transform=ax.transAxes)
+        for i, key in enumerate(OBJECTIVE_KEYS):
+            achieved = p_obj['objectives'].get(key, False)
+            color = "#00ff00" if achieved else "#ff0000"
+            circle = matplotlib.patches.Circle((x_obj_keys[i], y_pct(y_obj_row)), radius=0.005, color=color, transform=ax.transAxes)
+            ax.add_patch(circle)
+        plt.text(x_obj_total, y_pct(y_obj_row), str(p_obj['total_completed']), color="white", fontsize=11, ha='center', va='center', transform=ax.transAxes)
+        y_obj_row += 0.35
+
+
+    # ------------------
+    # Section 3: Table
+    # ------------------
+    y_tbl_start_inch = obj_bottom_inch + 0.8
+    
+    headers = ["Atleta", "Wins", "Kill Avg", "Kills", "Assists", "Redeploys", "Damage Avg", "Damage"]
+    x_cols = [0.05, 0.18, 0.30, 0.42, 0.54, 0.66, 0.80, 0.95]
+    aligns = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'right']
 
     # Header
     for idx, (h_text, x_pos, align) in enumerate(zip(headers, x_cols, aligns)):
-        plt.text(x_pos, y_tbl_start, h_text, color="#ffb86c", fontsize=12, fontweight='bold', ha=align, va='center', transform=ax.transAxes)
+        plt.text(x_pos, y_pct(y_tbl_start_inch), h_text, color="#ffb86c", fontsize=12, fontweight='bold', ha=align, va='center', transform=ax.transAxes)
     
-    plt.plot([0.1, 0.9], [y_tbl_start-0.02, y_tbl_start-0.02], color="#a0a0b0", lw=1, transform=ax.transAxes)
+    plt.plot([0.05, 0.95], [y_pct(y_tbl_start_inch + 0.25), y_pct(y_tbl_start_inch + 0.25)], color="#a0a0b0", lw=1, transform=ax.transAxes)
 
     # Rows
-    y_row = y_tbl_start - 0.06
+    y_row_inch = y_tbl_start_inch + 0.65
     for i, row in player_stats.iterrows():
-        # format values
         dmg_str = f"{row['damage']/1000:.1f}k" if row['damage'] >= 1000 else str(int(row['damage']))
         dmg_avg_str = f"{row['damage_avg']:.0f}"
         
@@ -184,28 +262,29 @@ def generate_dashboard_image(output_path=None, target_year=None, target_month=No
             str(int(row['wins'])),
             f"{row['kill_avg']:.1f}",
             str(int(row['kills'])),
+            str(int(row['assists'])),
+            str(int(row.get('redeploys', 0))),
             dmg_avg_str,
             dmg_str
         ]
         
-        # Draw background band for alternate rows
         if i % 2 == 0:
-            band = FancyBboxPatch((0.08, y_row-0.015), 0.84, 0.03, ec="none", fc="#16213e", transform=ax.transAxes, alpha=0.5)
+            import matplotlib.patches as patches
+            band = patches.Rectangle((0.06, y_pct(y_row_inch + 0.15)), 0.88, 0.3 / H_total, ec="none", fc="#16213e", transform=ax.transAxes, alpha=0.5)
             ax.add_patch(band)
+            
+        for idx, (val, x_pos, align) in enumerate(zip(row_vals, x_cols, aligns)):
+            plt.text(x_pos, y_pct(y_row_inch), val, color="white", fontsize=11, ha=align, va='center', transform=ax.transAxes)
+            
+        y_row_inch += 0.35
 
-        for val, x_pos, align in zip(row_vals, x_cols, aligns):
-            plt.text(x_pos, y_row, val, color="white", fontsize=11, ha=align, va='center', transform=ax.transAxes)
-        
-        y_row -= 0.04
-
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=200, bbox_inches='tight', facecolor=fig.get_facecolor())
+    plt.savefig(output_path, dpi=200, facecolor=fig.get_facecolor())
     plt.close()
     
     return output_path
 
 if __name__ == '__main__':
     # For local testing
-    path = generate_dashboard_image()
+    path = generate_dashboard_image(target_year=2026, target_month=5)
     if path:
         print(f"Dashboard generated at {path}")

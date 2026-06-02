@@ -50,7 +50,10 @@ def send_photo(photo_path: str, caption: str = None, reply_to_message_id: int = 
                 data=data,
                 files=files
             )
-            return response.json()
+            resp_json = response.json()
+            if not resp_json.get('ok'):
+                logger.error(f"Telegram API Error in send_photo: {resp_json}")
+            return resp_json
     except Exception as e:
         logger.error(f'Failed to send Telegram photo: {e}')
         return None

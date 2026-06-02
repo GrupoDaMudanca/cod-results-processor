@@ -6,6 +6,7 @@ from app.metrics.waste_bullet import WasteBullet
 from app.metrics.high_redeploys import HighQuantityRedeploys
 from app.metrics.soft_puncher import SoftPuncher
 from app.metrics.kill_stealer import KillStealer
+from app.metrics.low_redeploys import LowQuantityRedeploys
 
 ALL_METRICS = [
     LowQtdKills(),
@@ -13,6 +14,7 @@ ALL_METRICS = [
     HighQuantityRedeploys(),
     SoftPuncher(),
     KillStealer(),
+    LowQuantityRedeploys(),
 ]
 
 

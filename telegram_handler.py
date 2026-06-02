@@ -208,11 +208,16 @@ def poll_and_download(timeout: int = 30) -> int:
             
             send_message(random.choice(DASHBOARD_START_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_START")
             
-            dash_path = generate_dashboard_image(target_year=target_year, target_month=target_month)
-            if dash_path:
-                send_photo(dash_path, caption=random.choice(DASHBOARD_END_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_END")
-            else:
-                send_message(random.choice(DASHBOARD_NO_DATA_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_NO_DATA")
+            try:
+                dash_path = generate_dashboard_image(target_year=target_year, target_month=target_month)
+                if dash_path:
+                    send_photo(dash_path, caption=random.choice(DASHBOARD_END_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_END")
+                else:
+                    send_message(random.choice(DASHBOARD_NO_DATA_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="DASHBOARD_NO_DATA")
+            except Exception as e:
+                logger.error(f"Error generating dashboard: {e}")
+                from app.messages import ERROR_UNEXPECTED_MESSAGES
+                send_message(random.choice(ERROR_UNEXPECTED_MESSAGES), reply_to_message_id=message.get('message_id'), msg_type="ERROR_UNEXPECTED")
                         
         elif is_message_photo(message):
             download_file(

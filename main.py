@@ -51,7 +51,7 @@ def run_daemon():
             last_update = poll_and_download(timeout=30)
             
             if last_update:
-                logger.info(f"Downloaded images up to offset {last_update}. Starting processing...")
+                logger.info(f"Received updates up to offset {last_update}. Starting processing...")
                 
                 # Confirm to telegram immediately so we don't process them again if we crash
                 logger.info("Confirming messages to Telegram...")
