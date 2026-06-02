@@ -144,7 +144,7 @@ def handle_command(text: str, message_id: str, from_id: str, chat_id: str, is_ad
             dashboard_path = generate_dashboard_image()
             
         if dashboard_path:
-            messenger.send_photo(dashboard_path, reply_to_message_id=message_id, msg_type="DASHBOARD_REPLY")
+            messenger.send_photo(dashboard_path, caption=random.choice(DASHBOARD_END_MESSAGES), reply_to_message_id=message_id, msg_type="DASHBOARD_REPLY")
         else:
             messenger.send_message(random.choice(DASHBOARD_NO_DATA_MESSAGES), reply_to_message_id=message_id, msg_type="DASHBOARD_NO_DATA")
     
