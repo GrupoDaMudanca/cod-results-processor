@@ -715,3 +715,118 @@ CITATION_SAVED_MESSAGES = [
     "🏆 Pérola gravada na pedra. Quando lançarem o livro da squad, essa vai pra capa.",
     "💾 Beleza, salvei. Vou tentar não vomitar na placa-mãe de tanta sabedoria duvidosa."
 ]
+
+WIN_CHECK_SINGLE_WIN_MESSAGES = [
+    "Olha só, até relógio quebrado acerta duas vezes ao dia. Conseguiram uma win mixuruca hoje! ⏱️🎉",
+    "Não fizeram mais do que a obrigação. 1 winzinha no dia é o mínimo pra eu não formatar o banco de dados. 🥱💾",
+    "Só 1 win? Sério? Devem ter caído no lobby de iniciantes pra conseguir essa. Mas contabilizei. 🍼👼",
+    "Estou orgulhoso... De como um time tão ruim consegue ganhar pelo menos UMA partida. Parabéns. 👏🤡",
+    "Uma win solitária registrada! O milagre aconteceu. Alguém avise o Papa. ⛪🙌",
+    "Vocês ganharam só uma vez hoje? O servidor deve estar bugado pra deixar vocês ganharem. 🐛👾",
+    "Achei que iam zerar, mas olha aí, UMA win isolada pra salvar a pátria. 🇧🇷🦸‍♂️",
+    "Só ganharam uma porque eu processei bem a imagem. Mas vá lá, parabéns pela esmola. 🤖🥇",
+    "1 Win registrada. Agora vão descansar que a cota de sorte de vocês para o ano já esgotou hoje. 🍀🛌",
+    "Ganhamos uma! Apenas uma. Se continuarem assim, em 2050 vão ter um K/D positivo. 🏆👴",
+    "Uma winzinha hoje! A Activision deve ter colocado bots no lobby na hora do almoço. 🤖🔫",
+    "Registrei a única win aqui. Mas não fiquem se achando, a obrigação era ganhar pelo menos cinco. 😒📉",
+    "Aleluia! Demorou o dia todo pra conseguir só essa win, hein? Mas tá valendo. ⏳🙏",
+    "Uma única win! Estou até emocionado. É raro ver vocês ganhando sem chorar pro SBMM. 😭🥺",
+    "Olha a win solitária aí! Pelo visto compraram as skins novas que dão vantagem, né? 💸👗",
+    "A win do dia tá garantida (apenas uma, pra variar). Pensei que ia precisar xingar vocês. 🤬🤫",
+    "Tá bom, tá bom, eu elogio essa única vitória. Agora sumam da minha frente. 🚶‍♂️👋",
+    "Uma vitóriazinha salva com sucesso! Não esperem que eu dê biscoito, é a obrigação mínima. 🍪🚫",
+    "Conseguiram só 1 win! A terra parou de girar por um segundo pra registrar esse evento canônico. 🌍🛑",
+    "Uma winzinha mixuruca e sofrida, mas que salva o dia. Registrado no banco. 🏦🤏"
+]
+
+WIN_CHECK_MULTIPLE_WINS_MESSAGES = [
+    "Opa, opa! {count} wins hoje?! Vocês estão usando hack ou a Activision quebrou o pareamento? 🚨🤖",
+    "Até que enfim jogaram como gente grande. {count} vitórias é um bom começo. 📈🦍",
+    "{count} wins no mesmo dia? Alguém tranca esse squad antes que achem que são pro players. 🔒🤡",
+    "Tô chocado. O banco de dados registrou {count} vitórias hoje. Estão doentes ou algo assim? 🤒📊",
+    "Olha só, {count} vitórias! A cota de sorte da década inteira foi gasta hoje. 🍀🎰",
+    "Caramba, {count} wins! Vou até verificar o código pra ver se eu não dupliquei nada por engano. 🧐💻",
+    "Não vou mentir, {count} vitórias num dia me surpreendeu. Mas amanhã vocês voltam ao normal. 📉🥱",
+    "{count} vitórias hoje! Estão desempregados ou apenas fugiram das responsabilidades adultas? 💼🏃‍♂️",
+    "Vocês conseguiram {count} wins? Inacreditável. Devo estar rodando num universo paralelo. 🌌😵",
+    "Registrei {count} vitórias. Se tivessem essa dedicação no trabalho, estariam ricos. 💰🤦‍♂️",
+    "{count} wins hoje! Estão gastando todo o mousepad de vocês pra tentar impressionar quem? 🖱️😏",
+    "Parabéns pelas {count} vitórias! Agora vão tomar um banho que a cadeira deve estar cheirando mal. 🚿🤢",
+    "{count} vitórias! O nível dos adversários de hoje devia estar tenebroso pra vocês ganharem tanto. 🧟‍♂️👎",
+    "Uau, {count} wins! O que tomaram hoje? Red Bull vencido misturado com sorte pura? 🧪💥",
+    "O painel não mente: {count} vitórias! Devo admitir que vocês não foram tão lixos hoje. 🗑️✨",
+    "Anotado. {count} vitórias. Continuam péssimos, mas hoje a matemática decidiu sorrir pra vocês. 🧮😁",
+    "{count} vitórias registradas. Alguém vai pedir música no Fantástico das noobices? 🎵🎤",
+    "Estou impressionado. {count} wins não é pra qualquer um. Quer dizer, não pra vocês. 😱🏆",
+    "Tive que processar imagens de {count} vitórias hoje. Vão pagar hora extra pra minha CPU? ⚡🛠️",
+    "{count} wins salvas no banco de dados. O apocalipse tá chegando, e vocês são os cavaleiros. 🐎🔥"
+]
+
+WIN_CHECK_FAIL_MESSAGES = [
+    "Deu o horário e nenhuma win hoje? O time de vocês já foi melhor, hein... Tempos áureos já passaram. 👴🥀",
+    "Tô olhando aqui e o banco de dados tá criando teias de aranha. Nenhuma vitória hoje. Vergonha. 🕸️🕷️",
+    "Eu sabia que vocês eram ruins, mas não TANTO. Passar o dia sem uma win é humilhante. 🤡📉",
+    "Cadê a win de hoje? Pelo amor de Deus, vocês estão gastando energia elétrica a toa jogando. 🔌💸",
+    "Zero wins registradas hoje. Vocês entraram no jogo só pra virar loot dos outros? 🎒💀",
+    "Que fase, hein? Nem um top 1zinho hoje. O servidor do Warzone tá até rindo de vocês. 😂🌐",
+    "Nenhuma vitória? Acho que tá na hora de desinstalar o jogo. Eu mesmo apago o bot se continuar assim. 🗑️❌",
+    "Tô esperando a win de hoje até agora... e acho que vou morrer esperando. Bando de bagres. 🐟☠️",
+    "Não ganharam nada hoje? Devem estar jogando com a TV desligada, só pode. 📺🦯",
+    "Que papelão! Fim do dia e a tabela de vitórias continua zerada. Vocês não cansam de perder? 🧾🤡",
+    "Minha CPU tá gelada porque não processei nenhuma vitória hoje. Vão treinar, pelancudos. 🥶🍖",
+    "Zero wins. Se eu fosse vocês, fingia que o controle quebrou pra ter uma desculpa. 🎮💥",
+    "Nenhuma win hoje! A taxa de vitórias de vocês tá mais triste que o meu código sem manutenção. 😢📉",
+    "Tô olhando o painel... Nada. Vazio. O vácuo do espaço tem mais conteúdo que as vitórias de vocês hoje. 🌌🔭",
+    "Vocês são tão consistentes! Consistentemente péssimos. Zero wins hoje. 📉🧱",
+    "O dia tá acabando e nada de vitórias. Alguém aí sabe pelo menos atirar no jogo? 🔫🤷‍♂️",
+    "Zero vitórias hoje. Talvez seja hora de mudar de jogo. Já tentaram Minecraft? ⛏️🟩",
+    "Cadê as prints de vitória? Meu banco de dados tá chorando de fome. Vocês são uma decepção. 😭🍽️",
+    "Fim do expediente e nenhuma win. Vocês não jogam, vocês prestam serviço comunitário pra alegrar os adversários. 🤝🎁",
+    "Nenhum registro de win hoje. Se a incompetência fosse um esporte, vocês seriam medalha de ouro. 🥇🤦‍♂️"
+]
+
+WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES = [
+    "🚨 ALARME DE INCOMPETÊNCIA! Já são {days} dias seguidos sem UMA única win. Vocês desaprenderam a jogar ou estão boicotando o banco de dados? 📉🤬",
+    "{days} dias sem vitória. {days} DIAS! Vocês estão sendo pagos pra perder, só pode. Que vergonha absurda. 💸🗑️",
+    "Estou aqui há {days} dias processando ZERO vitórias. Minha vontade é pedir demissão e apagar meu próprio código. 🤖🔫",
+    "Parabéns! Vocês bateram a marca de {days} dias sem ganhar. O próximo passo é o rebaixamento pro modo bot do bot. 🤡📉",
+    "{days} dias de seca absoluta! O deserto do Saara tem mais água do que vocês têm de win. Estão fazendo cosplay de figurante? 🐪🏜️",
+    "Chegamos ao {days}º dia sem vitórias. A Activision devia mandar uma cesta básica pra vocês de tanta pena. 🧺🥺",
+    "{days} dias apanhando no jogo! A tela de 'Gulag' já virou a tela inicial de vocês, pelo visto. ⛓️👻",
+    "Vocês sabem que o objetivo do jogo é SOBREVIVER, né? {days} dias seguidos perdendo indica que vocês pularam o tutorial. 📖🤦‍♂️",
+    "Já são {days} dias sem sentir o gosto de uma vitória. Devem estar sofrendo de síndrome de Estocolmo, porque apanham e voltam todo dia. 🤕❤️",
+    "ATENÇÃO: A seca de vitórias atingiu {days} dias. Defesa Civil foi acionada para lidar com esse desastre natural. 🚨🌪️",
+    "Estou começando a achar que é de propósito. {days} dias perdendo? Ninguém é tão ruim assim por acidente. 🤨🔍",
+    "{days} dias no esgoto da tabela. Eu nem sabia que era estatisticamente possível perder tanto assim de forma consecutiva. 📉💩",
+    "Vocês não ganham há {days} dias! O lobby inteiro já sabe que quando vocês caem na partida é free kill. 🎁🔫",
+    "Mais de {days} dias sem ganhar! A cota de humilhação não tem limite pra esse squad, impressionante. 🧗‍♂️📉",
+    "Faz {days} dias que a tabela tá intacta de vitórias. Tá tão empoeirada que daqui a pouco vira patrimônio histórico da derrota. 🏛️🕸️",
+    "Alguém chama o conselho tutelar, porque vocês estão sendo espancados no jogo há {days} dias seguidos. 🚔👶",
+    "{days} dias na seca! Minha dica é: mudem de jogo. Vai jogar um The Sims, montar uma casinha, que tiro não é pra vocês. 🏠🧱",
+    "Sinceramente, {days} dias sem win é pra repensar as escolhas da vida. Já tentaram jogar de monitor ligado? 📺🦯",
+    "O placar marca {days} dias sem sucesso. Vocês são a personificação do 'o importante é competir' levada a um nível patológico. 🏅🤡",
+    "Registrando: {days} dias na lama. Se a derrota pagasse salário, vocês já estariam bilionários. Vão treinar, pelancudos! 💰🍖"
+]
+
+MORNING_MOTIVATION_MESSAGES = [
+    "Bom dia! Ontem não teve win, não esperava muito de vocês mesmo, mas ok. Hoje é um novo dia pra apanharem de novo. ☀️🤡",
+    "Acordem, fracassados! O sol nasceu pra todos, mas a vitória de ontem não nasceu pra vocês. Que o dia de hoje traga novas derrotas. 🌅🗑️",
+    "Bom dia só pra quem ganhou ontem. Pra vocês é só 'dia' mesmo. Prontos pra servirem de alvo hoje? 🎯☕",
+    "Mais uma manhã linda! Pena que o histórico de vocês de ontem continua feio. Hoje tem mais humilhação, bora! 🌞📉",
+    "Bom dia, pesos mortos! Ontem vocês foram jantados, hoje já podem se preparar pro almoço. Bom dia! 🍽️😴",
+    "Bom dia! Passando pra lembrar que ontem o squad de vocês foi uma piada. Vistam a armadura de palhaço e vamos pra mais um dia. 🤡🎪",
+    "O sol já raiou! E o contador de vitórias de ontem ficou zerado. Inspirem fundo, o cheiro de derrota de hoje já tá no ar. 🌬️👃",
+    "Bom dia, equipe! O dia de ontem foi um desastre absoluto. Mantenham a consistência e sejam um fracasso hoje também! 📉🤝",
+    "Bom dia! Não se preocupem com o fato de não terem ganhado ontem. Hoje vocês também não vão ganhar, então não faz diferença. 🤷‍♂️🛌",
+    "Levantem-se! A Activision já preparou lobbies cheios de tryhards pra espancar vocês hoje igual fizeram ontem. 🥊🌅",
+    "Bom dia pra quem carrega o time (ou seja, ninguém aí). Ontem foi horrível, espero que hoje consiga ser pior! 📉💩",
+    "Bom dia! Ontem vocês distribuíram free kills pro servidor inteiro. Espero que a caridade continue hoje! 🎁👼",
+    "Aquele bom dia especial pra quem passou raiva ontem e vai passar de novo hoje. O importante é não desistir de passar vergonha. 🤬🔁",
+    "Bom dia! Ontem o desempenho foi tão ruim que meu banco de dados quase apagou por depressão. Melhorem (ou não, tanto faz). 💻📉",
+    "Acordaram? Que pena, o lobby dos adversários também. Preparados para não ganharem nada de novo hoje? 🌅👎",
+    "Um lindo dia! Diferente da gameplay de vocês ontem, que foi medonha. Pelo menos a consistência no erro a gente aplaude. 👏🤡",
+    "Bom dia! O café tá pronto e a vergonha de ontem já tá esquecida. Prontos pra criar as vergonhas de hoje? ☕🎭",
+    "Bom dia, bagres! Ontem não teve vitória, mas hoje a esperança se renova... de que pelo menos vocês peguem um top 10. 🙏🐟",
+    "Chegou a hora de levantar! Ontem vocês foram a escada pro sucesso dos outros. Prontos pra serem pisoteados de novo hoje? 🪜🥾",
+    "Bom dia! Ontem faltou dedo, faltou mira, faltou noção de jogo. Que hoje só falte a luz na casa de vocês pra eu não ter que registrar mais derrotas. 💡🔌"
+]
