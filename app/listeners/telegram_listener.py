@@ -20,7 +20,7 @@ class TelegramListener(BaseListener):
         from config import TELEGRAM_GET_CHAT_ADMINISTRATORS_ENDPOINT
         params = {'chat_id': TELEGRAM_CHAT_ID}
         try:
-            response = requests.get(TELEGRAM_GET_CHAT_ADMINISTRATORS_ENDPOINT, params=params).json()
+            response = requests.get(TELEGRAM_GET_CHAT_ADMINISTRATORS_ENDPOINT, params=params, timeout=10).json()
             if response.get('ok'):
                 return [str(admin.get('user', {}).get('id')) for admin in response.get('result', [])]
             logger.error(f"Failed to get chat administrators: {response.get('description')}")

@@ -93,26 +93,26 @@ ERROR_API_KEY_MESSAGES = [
 ]
 
 ERROR_UNEXPECTED_MESSAGES = [
-    "Deu um erro doido aqui tentando ler essa imagem... 😵‍💫 tenta de novo!",
-    "Vixe, essa imagem tá amaldiçoada! Meu sistema travou todo. 🧟‍♂️",
-    "Oxe, buguei forte agora! Não consegui entender nada dessa print. 🤯",
-    "Aí dento! O código deu um nó cego aqui. Tenta mandar a imagem de novo. 🪢",
+    "Deu um erro doido aqui no meu sistema... 😵‍💫 tenta de novo!",
+    "Vixe, deu tilt geral! Meu sistema travou todo. 🧟‍♂️",
+    "Oxe, buguei forte agora! Não consegui processar o que você mandou. 🤯",
+    "Aí dento! O código deu um nó cego aqui. Tenta de novo depois. 🪢",
     "Erro inesperado! A inteligência artificial burrificou por um segundo. 🤡",
-    "Eita pau, deu um curto circuito no meu cérebro! Ignora essa imagem e manda outra. ⚡",
-    "Tela azul da morte no bot! Tenta processar essa print mais tarde. 💻",
-    "A imagem tava tão feia que o Gemini se recusou a ler! Brincadeira, deu erro interno. 😂",
+    "Eita pau, deu um curto circuito no meu cérebro! Ignora isso e tenta de novo. ⚡",
+    "Tela azul da morte no bot! Tente o comando mais tarde. 💻",
+    "A requisição tava tão feia que o servidor se recusou a ler! Brincadeira, deu erro interno. 😂",
     "Ocorreu um erro místico e inexplicável! Os deuses da programação falharam. 🔮",
-    "Vixe maria, o bot engasgou feio! Não rolou ler essa imagem. 🗣️",
-    "Pane no sistema, alguém me desconfigurou! Erro genérico ao ler a print. 🤖❌",
-    "Essa partida foi tão caótica que até o algoritmo de leitura desistiu. 😵",
+    "Vixe maria, o bot engasgou feio! Não rolou processar isso agora. 🗣️",
+    "Pane no sistema, alguém me desconfigurou! Erro genérico na execução. 🤖❌",
+    "A situação foi tão caótica que até o meu algoritmo desistiu de tentar. 😵",
     "Erro na matrix! Alguma coisa deu muito errado tentando analisar isso aí. 🟩",
-    "Pifou tudo aqui! Vamos fingir que essa print nunca existiu, beleza? 🗑️",
-    "Oxe, bati a cabeça na quina do servidor! Não consegui processar a imagem. 🤕",
-    "Deu tilt! O cérebro eletrônico superaqueceu com essa print. 🔥",
-    "Ops, tropecei num bug! Tenta mandar a foto de novo pra ver se passa. 🐛",
-    "Aí dento, a imagem corrompeu meu raciocínio! Deu erro na análise. 🌪️",
+    "Pifou tudo aqui! Vamos fingir que isso nunca aconteceu, beleza? 🗑️",
+    "Oxe, bati a cabeça na quina do servidor! Não consegui completar a ação. 🤕",
+    "Deu tilt! O cérebro eletrônico superaqueceu no meio do processo. 🔥",
+    "Ops, tropecei num bug! Tenta mandar o comando de novo pra ver se passa. 🐛",
+    "Aí dento, a operação corrompeu meu raciocínio! Deu erro geral. 🌪️",
     "Erro inesperado 404 - Paciência Not Found. Brincadeira, só deu erro mesmo. 🤷‍♂️",
-    "Falha catastrófica no motor de leitura! Manda a print de novo que eu tento dnv. 🚨",
+    "Falha catastrófica no motor de execução! Manda de novo que eu tento dnv. 🚨",
 ]
 
 # Metric Messages
@@ -668,4 +668,50 @@ INVALID_IMAGE_MESSAGES = [
     "🤷‍♂️ O que você espera que eu faça com isso? Que eu invente kill pra foto do seu gato? Se liga, burro, manda o placar do COD.",
     "🔋 Gastando minha energia pra processar foto inútil? Você é um atraso de vida. Imagem ignorada.",
     "😑 E o prêmio de asno do dia vai para... Quem mandou essa foto! Se quer processar placar, manda placar. Simples."
+]
+
+CITATION_EMPTY_MESSAGES = [
+    "📜 O livro de lendas tá vazio. Nenhuma pérola foi dita até agora.",
+    "🏜️ Fui no arquivo de citações e só achei poeira e vento. Tá na hora de soltar umas, não?",
+    "🦗 *Cri cri cri*... Cadê as frases de efeito? O banco de dados tá zerado.",
+    "🗑️ Não tem nenhuma citação salva ainda. Vocês tão precisando de um roteirista pro squad.",
+    "🤡 Vocês são tão sem graça que até hoje ninguém mandou uma pérola decente pra eu salvar.",
+    "🥱 Dormi lendo as (zero) citações que vocês salvaram. Pelo amor, falem alguma coisa interessante.",
+    "📚 As crônicas do squad estão em branco. Tratem de usar o comando /citation direito.",
+    "🤷‍♂️ Procurando sabedoria onde não tem. Ninguém salvou nenhuma pérola até hoje.",
+    "📭 Fui na caixa de mensagens épicas e ela tá vazia. Que decepção.",
+    "🧐 Tô procurando as falas icônicas, mas parece que vocês só falam besteira não documentada.",
+    "🕳️ Caí num buraco negro literário. Zero citações encontradas no servidor.",
+    "📉 A inflação tá alta, mas o nível de frases de efeito de vocês tá lá embaixo. Nenhuma pérola salva.",
+    "🕵️‍♂️ Investigando... Investigando... Nada. Nenhuma citação foi registrada. Zero, zip, nada.",
+    "🧠 Eu não sou mágico, se vocês não salvam a citação eu não tenho como inventar uma. Banco vazio.",
+    "🚫 Erro 404: Sabedoria not found. Comecem a anotar as perólas do squad, bando de esquecidos.",
+    "📜 Peguei o pergaminho e adivinha? Em branco! Vocês não imortalizaram nenhuma citação ainda.",
+    "🧻 O arquivo de pérolas tá parecendo um rolo de papel higiênico vazio. Vão produzir conteúdo!",
+    "🤡 É pra rir? Como eu vou mandar citação se ninguém nunca salvou porra nenhuma?",
+    "🙄 A criatividade de vocês é tão vasta quanto um copo d'água. Nenhuma pérola foi encontrada.",
+    "😴 O nível das calls deve estar tão ruim que não rendeu nem uma citaçãozinha pra salvar."
+]
+
+CITATION_SAVED_MESSAGES = [
+    "✅ Salvo! Nossa, eu ri DEMAIS dessa... SQN. Mas tá guardado.",
+    "💾 Arquivado com sucesso. Prometo fingir que achei engraçado quando for enviar no grupo.",
+    "✍️ Anotado! Um comediante nato no squad. Carlos Alberto de Nóbrega estaria orgulhoso.",
+    "🏆 Finalmente soltaram algo que preste. Salvo para a posteridade (ou até meu banco de dados apagar).",
+    "🤣 Hahahaha! Meu Deus do céu, eu não consigo respirar de tanto rir... de mentira. Citação salva.",
+    "📝 Essa foi tão boa que minha CPU até esquentou. Salvo com louvor.",
+    "🗂️ Pérola arquivada! Vou guardar essa sabedoria pra tentar entender o quão baixo chegou o nível de vocês.",
+    "👌 Excelente frase! Tão profunda quanto um pires. Já tá no banco de dados.",
+    "🌟 Uau, temos um filósofo contemporâneo no grupo! Salvei essa maravilha.",
+    "🤣 Ri tanto que quase fechei o meu próprio processo. Citação guardada com sucesso.",
+    "🧠 Anotado. Quando a humanidade for extinta, vão achar meu banco de dados e rir (ou chorar) dessa frase.",
+    "😎 Salvou! Essa pérola foi o pico intelectual de vocês no ano. E isso diz muito.",
+    "😂 Perdi os lados rindo dessa! Tá salva. (Nota mental: apagar isso quando ninguém estiver olhando).",
+    "📚 Guardado no panteão das grandes bobagens faladas no Warzone. Excelente trabalho.",
+    "🤡 Bela citação! Vou colocar na mesma pasta onde guardo as esperanças de vocês ganharem uma partida.",
+    "🗣️ Salvo! Um momento de genialidade acidental de vocês não pode ser ignorado.",
+    "📝 Confere! Já guardei no meu diário de abobrinhas da squad.",
+    "😆 Sensacional! Eu riria se eu tivesse um corpo físico. Salvo com sucesso.",
+    "🏆 Pérola gravada na pedra. Quando lançarem o livro da squad, essa vai pra capa.",
+    "💾 Beleza, salvei. Vou tentar não vomitar na placa-mãe de tanta sabedoria duvidosa."
 ]

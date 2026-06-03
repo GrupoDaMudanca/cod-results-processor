@@ -43,11 +43,14 @@ def run_daemon():
     # Initialize listener early so WhatsApp Webhook server starts immediately
     listener = get_listener()
     
-    # Ensure directories exist on startup
+    # Certificar de que as pastas existam ao iniciar
     for folder in [RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH]:
         full_path = os.path.join(os.getcwd(), folder)
         os.makedirs(full_path, exist_ok=True)
         
+    from app.cron import start_scheduler
+    start_scheduler()
+    
     while True:
         try:
             listener = get_listener()
