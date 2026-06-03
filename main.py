@@ -43,7 +43,7 @@ def run_daemon():
     # Initialize listener early so WhatsApp Webhook server starts immediately
     listener = get_listener()
     
-    # Certificar de que as pastas existam ao iniciar
+    # Ensure directories exist on startup
     for folder in [RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH]:
         full_path = os.path.join(os.getcwd(), folder)
         os.makedirs(full_path, exist_ok=True)
@@ -70,7 +70,9 @@ def run_daemon():
                     logger.info("Generating and sending dashboard...")
                     backfill_data = get_backfill()
                     if backfill_data:
-                        dashboard_path = generate_dashboard_image(target_year=int(backfill_data['year']), target_month=int(backfill_data['month']))
+                        from datetime import datetime
+                        dt = datetime(int(backfill_data['year']), int(backfill_data['month']), 1)
+                        dashboard_path = generate_dashboard_image(start_date=dt, end_date=dt)
                     else:
                         dashboard_path = generate_dashboard_image()
                     if dashboard_path:
@@ -93,7 +95,7 @@ def run_daemon():
                 logger.info("Cycle completed successfully. Waiting for new messages...")
         except Exception as e:
             logger.error(f"Unexpected error in main loop: {e}")
-            time.sleep(5)  # Pause um pouco antes de tentar novamente para não espamar logs
+            time.sleep(5)  # Pause briefly before retrying to avoid spamming logs
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@ from app.messages import (
     ERROR_QUOTA_MESSAGES,
     ERROR_API_KEY_MESSAGES,
     ERROR_UNEXPECTED_MESSAGES,
+    INVALID_IMAGE_MESSAGES,
 )
 
 from config import (
@@ -95,7 +96,9 @@ def process_file(image_path: str, date: str = None) -> Match:
             possible_names_str = ", ".join(possible_names)
 
     prompt = (
-        "Read this image for me. Disconsider the line showing the squad's total points. "
+        "Read this image for me. "
+        "CRITICAL INSTRUCTION: If the image is NOT a Call of Duty match scoreboard/results screen, you must return an empty array []. "
+        "Disconsider the line showing the squad's total points. "
         "IMPORTANT: Do not confuse 'Eliminações' with 'Kills'. In this game, 'Eliminações' = Kills + Assists. "
         "Therefore, map the column 'Baixas' to the 'kills' field, and completely ignore the 'Eliminações' column. "
         f"Here is a list of expected player names. If you see a name that closely resembles one of these, please use this EXACT spelling: {possible_names_str}"
@@ -118,6 +121,10 @@ def process_file(image_path: str, date: str = None) -> Match:
     logger.info(f"AI identified stats:\n{result_text}")
 
     match_data = json.loads(result_text)
+    
+    if not match_data:
+        logger.warning(f"No match data found in image {image_path}. AI returned empty array.")
+        return None
 
     match = read_new_match(match_data, date=date)
 
@@ -158,6 +165,14 @@ def process_files(root_path: str) -> List[Match]:
         # Process the image with Gemini
         try:
             match = process_file(image_path, date=date_str)
+            if not match:
+                if message_id:
+                    messenger.send_message(
+                        random.choice(INVALID_IMAGE_MESSAGES),
+                        reply_to_message_id=message_id,
+                        msg_type="INVALID_IMAGE"
+                    )
+                continue
         except Exception as e:
             err_str = str(e)
             logger.error(f"Full Gemini API exception: {err_str}")

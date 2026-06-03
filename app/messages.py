@@ -1,4 +1,4 @@
-# Mensagens do sistema (Telegram interações)
+# System messages
 
 PROCESSING_MESSAGES = [
     "Aí dento! Bora ver quem carregou e quem foi carregado nessas partidas... 🧐",
@@ -115,7 +115,7 @@ ERROR_UNEXPECTED_MESSAGES = [
     "Falha catastrófica no motor de leitura! Manda a print de novo que eu tento dnv. 🚨",
 ]
 
-# Mensagens de Métricas
+# Metric Messages
 
 LOW_KILLS_MESSAGES = [
     lambda name: f"Ei {name}, tu tá só assistindo a partida é? 🍿",
@@ -312,7 +312,7 @@ BACKFILL_START_MESSAGES = [
     "🎯 Se a sua mira fosse boa igual sua memória... Enfim, modo retroativo ativado pra {month}/{year}. Desembucha.",
     "😒 Claro, porque eu não tenho mais nada pra fazer além de computar print de {month}/{year}. Tá liberado, manda.",
     "🤡 Qual a dificuldade de mandar em {month}/{year} na época certa? Inacreditável. Tá, manda lá que eu vou processar.",
-    "💁‍♂️ Achando que sou tuas negas pra ficar puxando data retroativa de {month}/{year}? Vai, manda logo antes que eu feche a porta.",
+    "💁‍♂️ Achando que sou teu capacho pra ficar puxando data retroativa de {month}/{year}? Vai, manda logo antes que eu feche a porta.",
     "👑 Lá vamos nós ter trabalho dobrado porque a princesa esqueceu de postar o print de {month}/{year}. DeLorean ativado.",
     "🤖 Bot trabalha 24h por dia e o bonito atrasa o print de {month}/{year}. Tá ativado pra essa data, manda rápido.",
     "🏆 Parabéns, você conseguiu atrasar a única coisa que tinha pra fazer em {month}/{year}. Pode mandar as prints velhas.",
@@ -398,7 +398,7 @@ DASHBOARD_START_MESSAGES = [
     "🥱 Eu tava num sono tão bom... mas não, a vossa majestade quer o dashboard. Gerando essa bodega.",
     "😒 Deixa eu adivinhar: você tem preguiça de olhar o histórico? Tá bom, vou gerar o dashboard mastigadinho pra você.",
     "☕ Fui interrompido no meu café virtual pra isso. Gerando o relatório de vocês... paciência.",
-    "🤡 Ah claro, eu não tenho vida, nasci pra ser escravo de dashboard. Puxando os dados, espera um pouco.",
+    "🤡 Ah claro, eu não tenho vida, nasci pra ser estagiário de dashboard. Puxando os dados, espera um pouco.",
     "💻 Eu podia estar minerando bitcoin, mas tô aqui gerando dashboard de Warzone pra vocês. Que fase.",
     "🤦‍♂️ Ninguém quer ter o trabalho de anotar nada, né? Tudo pro bot fazer. Vou montar esse painel aí, guenta.",
     "🗑️ Meu HD já tá cheio dessas estatísticas de vocês, mas bora lá gerar mais um dashboard inútil.",
@@ -509,7 +509,7 @@ DASHBOARD_INVALID_FORMAT_MESSAGES = [
 ]
 
 DASHBOARD_TOO_MANY_MONTHS_MESSAGES = [
-    "🤡 Tu tá achando que eu sou teu escravo pra calcular mais de 12 meses? Vai pedir milagre na igreja!",
+    "🤡 Tu tá achando que eu sou teu empregado pra calcular mais de 12 meses? Vai pedir milagre na igreja!",
     "🙄 Mais de um ano de estatística? Eu não sou o IBGE, meu filho! Reduz esse período aí.",
     "🤦‍♂️ O maluco quer um TCC do Warzone! Limite máximo é 12 meses, não abusa da minha CPU.",
     "🤪 Tá de brincadeira comigo? Quer que eu puxe os dados desde o descobrimento do Brasil? Máximo 1 ano!",
@@ -645,4 +645,27 @@ BACKFILL_RESTRICTED_MESSAGES = [
     "🚷 Placa de 'Não Ultrapasse' colocada. Se não tem crachá da diretoria, não viaja no tempo.",
     "⚔️ O império contra-ataca! O poder voltou pras mãos de quem manda de verdade.",
     "🔒 Fim do recreio, crianças. Todo mundo de volta pra sala, a máquina do tempo agora é de adulto."
+]
+
+INVALID_IMAGE_MESSAGES = [
+    "🤔 E eu com isso? Mandou foto de viagem ou da janta por quê? Isso aqui é pra ler placar de COD, estupidez não é suportada.",
+    "🤡 Alô, palhaço, que foto é essa? Tá achando que meu token da API cai do céu pra processar essas tuas idiotices?",
+    "🚮 Mandando lixo na minha DM, sério? Meu processamento é pra placar do COD, não pra essas porcarias.",
+    "🧠 Faltou oxigênio no cérebro na hora de mandar a foto? Essa imagem não tem tabela de Warzone nem aqui nem na China.",
+    "🤦‍♂️ Tem que desenhar que eu só leio placar de partida? Tá gastando minha paciência e a cota do Gemini à toa, seu burro.",
+    "🦠 Deve ser difícil viver com apenas um neurônio. Isso aqui não é o Instagram da sua vó, é bot de COD!",
+    "💸 Cada foto dessa gasta o meu servidor, idiota! Manda uma print de COD ou guarda as fotinhas pro Instagram.",
+    "💩 Tá testando a minha inteligência ou só exibindo a sua falta dela? Imagem inválida, seu jumento.",
+    "🔍 Procurei um placar de COD na foto e só achei a sua burrice. Favor não gastar processamento à toa.",
+    "🤡 Bela foto, pena que não é de COD. Da próxima vez, tenta mandar algo útil, tapado.",
+    "🤖 Eu sou uma Inteligência Artificial, e você com certeza é uma Estupidez Natural. Manda a foto certa do placar, inútil.",
+    "🤨 Você é cego ou só se faz? Isso não é um placar de Call of Duty. Para de me usar de álbum de fotos.",
+    "🗑️ Imagem direto pro lixo. Minha função é ler placar de jogo, não olhar pra qualquer porcaria que você envia.",
+    "🤡 Parabéns, gastou recurso do servidor atoa pra mandar uma imagem inútil. Você deve ter diploma de otário.",
+    "🤬 Que foto imbecil é essa? Manda a tabela do COD, caralho. Não tô aqui pra processar lixo.",
+    "🧱 Tentar processar isso é como tentar conversar com uma porta. Manda a foto certa do placar, gênio da lâmpada.",
+    "🤡 O QI da pessoa tem que estar negativo pra mandar essa foto num bot de placar. Não tem dado nenhum nessa desgraça.",
+    "🤷‍♂️ O que você espera que eu faça com isso? Que eu invente kill pra foto do seu gato? Se liga, burro, manda o placar do COD.",
+    "🔋 Gastando minha energia pra processar foto inútil? Você é um atraso de vida. Imagem ignorada.",
+    "😑 E o prêmio de asno do dia vai para... Quem mandou essa foto! Se quer processar placar, manda placar. Simples."
 ]

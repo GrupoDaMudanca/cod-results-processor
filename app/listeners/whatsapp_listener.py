@@ -133,7 +133,7 @@ class WhatsAppListener(BaseListener):
                 handle_command(text, str(message_id), from_id, chat_id, is_admin=is_admin)
                 continue
                 
-            if message.get('hasMedia', False):
+            if message.get('hasMedia', False) and message.get('type') == 'image':
                 has_photo = True
                 
                 if not processing_msg_sent:
