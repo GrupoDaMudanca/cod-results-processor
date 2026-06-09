@@ -7,7 +7,7 @@ import pytz
 from config import CRON_CITATION_SCHEDULE, CRON_WIN_CHECK_SCHEDULE, CRON_MORNING_MOTIVATION_SCHEDULE, TZ, LATEST_OUTPUT_FILE_PATH
 from app.citations import get_random_citation
 from app.messengers import get_messenger
-from app.messages import CITATION_EMPTY_MESSAGES, WIN_CHECK_SINGLE_WIN_MESSAGES, WIN_CHECK_MULTIPLE_WINS_MESSAGES, WIN_CHECK_FAIL_MESSAGES, WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES, MORNING_MOTIVATION_MESSAGES
+from app.messages import CITATION_EMPTY_MESSAGES, WIN_CHECK_SINGLE_WIN_MESSAGES, WIN_CHECK_MULTIPLE_WINS_MESSAGES, WIN_CHECK_FAIL_MESSAGES, WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES, WIN_CHECK_EXTREME_FAIL_MESSAGES, MORNING_MOTIVATION_MESSAGES, MORNING_EXTREME_MOTIVATION_MESSAGES
 import pandas as pd
 import os
 from datetime import datetime, timedelta
@@ -61,7 +61,10 @@ def send_daily_win_check():
         msg = random.choice(WIN_CHECK_MULTIPLE_WINS_MESSAGES).replace("{count}", str(wins_today))
         messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE")
     else:
-        if days_without_win > 1:
+        if days_without_win >= 3:
+            msg = random.choice(WIN_CHECK_EXTREME_FAIL_MESSAGES).replace("{days}", str(days_without_win))
+            messenger.send_message(msg, msg_type="WIN_CHECK_EXTREME_FAIL")
+        elif days_without_win > 1:
             msg = random.choice(WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES).replace("{days}", str(days_without_win))
             messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE_FAIL")
         else:
@@ -73,6 +76,8 @@ def send_morning_motivation():
     messenger = get_messenger()
     
     wins_yesterday = 0
+    wins_today = 0
+    days_without_win = 1
     if os.path.exists(LATEST_OUTPUT_FILE_PATH) and os.stat(LATEST_OUTPUT_FILE_PATH).st_size > 0:
         try:
             df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
@@ -82,15 +87,36 @@ def send_morning_motivation():
                 except pytz.UnknownTimeZoneError:
                     timezone = pytz.UTC
                     
-                yesterday = datetime.now(timezone) - timedelta(days=1)
+                now = datetime.now(timezone)
+                yesterday = now - timedelta(days=1)
+                
                 yesterday_str = yesterday.strftime('%d/%m/%Y')
+                today_str = now.strftime('%d/%m/%Y')
+                
                 yesterday_df = df[df['date'] == yesterday_str]
                 wins_yesterday = yesterday_df['match_id'].nunique()
+                
+                today_df = df[df['date'] == today_str]
+                wins_today = today_df['match_id'].nunique()
+                
+                if wins_yesterday == 0 and wins_today == 0:
+                    df['parsed_date'] = pd.to_datetime(df['date'], format='%d/%m/%Y', errors='coerce')
+                    last_win_date = df['parsed_date'].max()
+                    if pd.notna(last_win_date):
+                        days_without_win = (now.replace(tzinfo=None) - last_win_date).days
         except Exception as e:
             logger.error(f"Failed to read CSV for morning motivation: {e}")
             
+    if wins_today > 0:
+        logger.info("They already won today, skipping morning motivation.")
+        return
+
     if wins_yesterday == 0:
-        messenger.send_message(random.choice(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
+        if days_without_win >= 4:
+            msg = random.choice(MORNING_EXTREME_MOTIVATION_MESSAGES)
+            messenger.send_message(msg, msg_type="MORNING_EXTREME_MOTIVATION")
+        else:
+            messenger.send_message(random.choice(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
     else:
         logger.info("They won yesterday, so no motivation needed today.")
 

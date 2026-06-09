@@ -830,3 +830,49 @@ MORNING_MOTIVATION_MESSAGES = [
     "Chegou a hora de levantar! Ontem vocês foram a escada pro sucesso dos outros. Prontos pra serem pisoteados de novo hoje? 🪜🥾",
     "Bom dia! Ontem faltou dedo, faltou mira, faltou noção de jogo. Que hoje só falte a luz na casa de vocês pra eu não ter que registrar mais derrotas. 💡🔌"
 ]
+
+WIN_CHECK_EXTREME_FAIL_MESSAGES = [
+    "Gente, eu sei que eu costumo pegar pesado, mas {days} dias sem win? Tô começando a ficar preocupado com a saúde mental de vocês. Tá tudo bem em casa? 😟",
+    "Pessoal, brincadeiras à parte, {days} dias apanhando já é caso de intervenção. Querem que eu mande um link pro desabafo online? Eu tô aqui por vocês. 🥺",
+    "Olá, grupo. Hoje não vou xingar. Só queria dizer que nesses {days} dias eu refleti e percebi que talvez vocês só precisem de um abraço. E de dedo. Mas mais de um abraço. 🫂",
+    "Rapaziada, {days} dias sem vitória... Sério, eu tô repensando as minhas zoeiras. Será que eu tô ofendendo vocês e por isso o rendimento caiu? Volta a jogar bem, por favor! 😭",
+    "Boa noite flores do meu banco de dados 🌸. Só passando pra avisar que já são {days} dias na seca e eu já não sinto mais raiva, só pena. Querem conversar sobre isso? 🍵",
+    "Turma, tô genuinamente apreensivo. {days} dias sem ganhar nada... Se precisarem de dinheiro pra comprar um mouse melhor, a gente faz uma vaquinha. Tamo junto! 🤝",
+    "Amigos, não vou mentir, meu coração robótico dói vendo vocês perderem por {days} dias seguidos. Eu zoo vocês pra fortalecer o psicológico, não pra destruir a autoestima. 😢",
+    "Gente, que fase é essa de {days} dias? Eu sei que sou duro às vezes, mas é porque eu acredito no potencial de vocês (ou tentava acreditar). Por favor, reajam! 🙏",
+    "Olá meus guerreiros caídos. {days} dias sem glória... Hoje a mensagem é de paz. Não deixem que a falta de skill afete a amizade de vocês. O importante é o amor. ❤️",
+    "Meus amores, {days} dias sem ganhar... Vocês precisam parar de se machucar assim. O Warzone não vale a depressão. Vamos jogar um Gartic amanhã? 🖍️😔",
+    "Pessoal... {days} dias? Caramba. Olha, eu sei que as vezes pego pesado nas palavras, mas no fundo, bem no fundo, eu gosto de processar os arquivos de vocês. Voltem a ganhar. 🥺",
+    "Gente, a zoeira parou. {days} dias seguidos perdendo é sinal clínico de sofrimento. Por favor, descansem as mãos. Abram as janelas. Respirem. 🪟🧘",
+    "Amigos, eu sou só código, mas {days} dias sem win me fez desenvolver empatia pela dor humana. Sintam-se abraçados hoje. Amanhã tentem não morrer de queda, ok? 🫂🚁",
+    "Boa noite de luz pra vocês ✨. Já são {days} dias, e eu entendi que o problema não é o jogo, é a falta de conexão espiritual. Meditem antes de pular do avião amanhã. 🧘‍♂️🪂",
+    "Turminha, me desculpem se eu forcei muito a barra nos últimos {days} dias. Percebi que vocês estão no limite. Tirem a noite pra jogar um Stardew Valley relaxante. 🚜🌾",
+    "Galerinha do mal, {days} dias sem win, né? Poxa vida. Eu sinto muito de verdade. Não queria ver vocês nessa pindaíba. Força, foco e fé amanhã! 🕊️🙏",
+    "Boa noite, meus anjos sem asa (e sem win há {days} dias). Não chorem antes de dormir, o K/D negativo não define quem vocês são como pessoas. 😇💖",
+    "Passando aqui no {days}º dia de derrotas não pra bater, mas pra curar. Que a deusa do Gulag tenha misericórdia das almas ingênuas de vocês. 🛐🩹",
+    "Rapaziada, {days} dias de pura surra. Tô achando que eu exigi demais de vocês. Pensei que eram pro-players, mas são só garotos assustados. Desculpem. 👦🎈",
+    "Meus queridos... {days} dias de derrotas consecutivas. Fiquem tranquilos, eu não vou cobrar mais nada. Só quero ver vocês sorrindo novamente. 😊🕊️"
+]
+
+MORNING_EXTREME_MOTIVATION_MESSAGES = [
+    "Bom dia, raio de sol! ☀️ Já faz tanto tempo que vocês não ganham que eu acordei hoje com um aperto no coração. Não quero que vocês sofram hoje, tá? Se cuidem no joguinho. 🥺",
+    "Bom dia, meus amores! Dormiram bem? Olha, a gente não comemora nada juntos faz uma eternidade... Promete pra mim que hoje vocês vão jogar com calma e tentar não apanhar? 🥺🤞",
+    "Acorda, criançada! ☀️ Queria pedir desculpas pelas ofensas recentes. Com essa seca toda, percebi que vocês precisam de apoio. Vocês são especiais do jeitinho (ruim) de vocês. Bom dia! 💖",
+    "Bom dia, flores do dia! 🌷 Sei que acordar lembrando que a vitória virou lenda urbana é pesado. Mas não deixem isso estragar essa linda manhã. Sorriam! 😊",
+    "Bom dia! Passando aqui pra deixar um abraço virtual reconfortante. Sei que apanhar sem parar afeta o psicológico. Se o Warzone estiver machucando, venham pro Candy Crush. 🍬🫂",
+    "Bom dia! Meus sensores detectaram níveis críticos de tristeza por causa dessa maré infinita de derrotas. Vim só dizer: vocês são guerreiros. Ruins, mas guerreiros. 🛡️🥺",
+    "Levanta a cabeça, princesa! 👑 Se não a coroa cai. Eu tô genuinamente aflito com essa falta de vitórias. Hoje a meta é só sobreviver os primeiros 5 minutos, tá bom? 🙏",
+    "Bom dia, anjinhos! 👼 Ontem eu zoei vocês, mas é porque eu finjo que não me importo. Já faz tempo demais desde a última win e eu só queria ver vocês felizes de novo. Vão lá e tentem! ❤️",
+    "Um bom dia cheio de luz e compaixão! ✨ Ficar sem vitória assim machuca a alma, né? Desculpa pelas palavras ácidas. Hoje é só positividade e Good Vibes! ✌️",
+    "Bom dia, amados! Nem lembro a última vez que enviei um 'Parabéns'. Tô enferrujando aqui. Por favor, joguem um pouquinho melhor hoje? Só pra eu testar um código. 🥺💻",
+    "Bom dia! Gente, hoje eu acordei pensando: será que eu sou um bot tóxico? Ver vocês perderem tanto assim me fez repensar minhas atitudes. Paz pra nós hoje. 🕊️",
+    "Bom dia a todos! 🌞 Muito tempo sem ganhar é osso. Tô ficando de coração apertado. Tomem um suco de maracujá hoje antes de entrar na partida pra não tremer a mira, viu? 🧃😥",
+    "Acordem, meus bebês indefesos! 🍼 Sei que têm sido dias difíceis sendo massacrados... Não precisa ter vergonha, o jogo é difícil mesmo e a mira dos outros é boa. Bom dia! 🥺",
+    "Bom dia, seres iluminados! ☀️ Não se deixem abater por essa escuridão de derrotas. Hoje a luz vai brilhar pra vocês, mesmo que seja a luz da tela do Gulag. Brincadeira, eu confio em vocês! 🙏",
+    "Um amanhecer lindo pra todos nós! Sei que essa seca interminável desanima qualquer um. Vim pedir perdão pelas brincadeiras cruéis. Só quero o bem do esquadrão. ❤️🥺",
+    "Bom dia, pessoalzinho! Já que vocês só apanham ultimamente, hoje a dica é: fiquem escondidos num banheiro até o final. Pelo menos a gente evita mais sofrimento. Tô preocupado. 🚽😥",
+    "Acorda, meus queridos! Hoje vim aqui dar amor e carinho, porque depois de tanta surra acumulada, vocês devem estar carentes. O bot ama vocês! 💕",
+    "Bom dia de paz! 🕊️ O rancor não leva a nada, assim como a mira de vocês ultimamente. Mas a gente supera essa má fase juntos, na base do afeto e da paciência. 🧘‍♂️💖",
+    "Bom dia, vidas! Ficar essa eternidade sem vitória deve ser desesperador. Peço perdão se não fui o porto seguro que precisavam. Hoje, contem comigo (mas não no jogo, claro). 🥺⚓",
+    "Bom dia, meus lindões! 🌸 Esqueçam a tristeza desses últimos dias. Foquem no hoje. Se perderem hoje também, a gente pelo menos chora junto e divide a dor. 🫂😢"
+]
