@@ -13,6 +13,8 @@ import os
 import calendar
 from datetime import datetime, timedelta
 
+from app.state import mark_job_sent, get_cron_state
+
 logger = logging.getLogger(__name__)
 
 def send_daily_citation():
@@ -25,7 +27,7 @@ def send_daily_citation():
         messenger.send_message(f"📖 *Pérola do Dia:*\n\n{citation}", msg_type="CITATION_DAILY")
     else:
         logger.info("No citations available to send.")
-        pass
+    mark_job_sent("citation")
 
 def send_daily_win_check():
     """Checks if there was a win today and sends an acidic message."""
@@ -70,6 +72,8 @@ def send_daily_win_check():
             messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE_FAIL")
         else:
             messenger.send_message(random.choice(WIN_CHECK_FAIL_MESSAGES), msg_type="WIN_CHECK_FAIL")
+            
+    mark_job_sent("win_check")
 
 def send_morning_motivation():
     """Checks if there were no wins yesterday and sends a 'motivational' message."""
@@ -120,6 +124,8 @@ def send_morning_motivation():
             messenger.send_message(random.choice(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
     else:
         logger.info("They won yesterday, so no motivation needed today.")
+        
+    mark_job_sent("morning_motivation")
 
 def send_monthly_awards():
     """Sends the monthly dashboard and awards on the 1st of the month."""
@@ -142,6 +148,7 @@ def send_monthly_awards():
     df = load_data(start_date=first_day_prev_month, end_date=last_day_prev_month)
     if df.empty or dashboard_path is None:
         logger.warning("No data for last month to generate awards.")
+        mark_job_sent("monthly_awards")
         return
         
     highlights = get_monthly_highlights(df)
@@ -181,11 +188,13 @@ def send_monthly_awards():
             
             text_parts.append("- " + template.format(name=name, val=val))
             
+    
     outro_msg = random.choice(MONTHLY_AWARD_OUTRO_MESSAGES)
     text_parts.append(f"_{outro_msg}_")
             
     final_text = "\n\n".join(text_parts)
     messenger.send_message(final_text, msg_type="MONTHLY_AWARDS")
+    mark_job_sent("monthly_awards")
 
 def send_month_end_hype():
     """Sends a hype message in the last 5 days of the month."""
@@ -255,6 +264,42 @@ def send_month_end_hype():
         messenger.send_message(msg, msg_type="MONTH_END_HYPE")
     else:
         logger.info(f"Not end of month yet (days left: {days_left}). Skipping hype.")
+        
+    mark_job_sent("month_end_hype")
+
+def recover_missed_jobs(timezone):
+    """Checks the JSON state file and executes any jobs that were scheduled for today but missed."""
+    logger.info("Checking for missed cron jobs today...")
+    state = get_cron_state()
+    sent_jobs = state.get("sent_jobs", [])
+    now = datetime.now(timezone)
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    jobs_config = [
+        ("citation", CRON_CITATION_SCHEDULE, send_daily_citation),
+        ("win_check", CRON_WIN_CHECK_SCHEDULE, send_daily_win_check),
+        ("morning_motivation", CRON_MORNING_MOTIVATION_SCHEDULE, send_morning_motivation),
+        ("monthly_awards", CRON_MONTHLY_AWARDS_SCHEDULE, send_monthly_awards),
+        ("month_end_hype", CRON_END_OF_MONTH_HYPE_SCHEDULE, send_month_end_hype)
+    ]
+    
+    for job_id, schedule, func in jobs_config:
+        if job_id in sent_jobs:
+            continue
+            
+        try:
+            trigger = CronTrigger.from_crontab(schedule, timezone=timezone)
+            next_fire = trigger.get_next_fire_time(start_of_today, start_of_today)
+            
+            # If the job was scheduled to run today, and that time is already past (or now)
+            if next_fire and next_fire <= now:
+                logger.info(f"Recovering missed job: {job_id}")
+                try:
+                    func()
+                except Exception as e:
+                    logger.error(f"Failed to recover job {job_id}: {e}")
+        except ValueError as e:
+            logger.error(f"Invalid cron format for {job_id} during recovery: {e}")
 
 def start_scheduler():
     """Initializes and starts the APScheduler with configured jobs."""
@@ -300,6 +345,8 @@ def start_scheduler():
         logger.info(f"Month end hype job scheduled with '{CRON_END_OF_MONTH_HYPE_SCHEDULE}' in {timezone}")
     except ValueError as e:
         logger.error(f"Invalid cron format: {CRON_END_OF_MONTH_HYPE_SCHEDULE}. Error: {e}. Month end hype cron disabled.")
+
+    recover_missed_jobs(timezone)
 
     scheduler.start()
     logger.info("Cron scheduler started.")
