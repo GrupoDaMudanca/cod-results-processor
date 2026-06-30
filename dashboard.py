@@ -39,6 +39,35 @@ def load_data(start_date=None, end_date=None):
     
     return df
 
+def get_monthly_highlights(df):
+    """Calculates and returns the top players for each category."""
+    player_stats = df.groupby('player_name').agg(
+        wins=('match_id', 'nunique'),
+        kills=('kills', 'sum'),
+        damage=('damage', 'sum'),
+        assists=('assists', 'sum') if 'assists' in df.columns else ('kills', 'sum'),
+        redeploys=('redeploys', 'sum') if 'redeploys' in df.columns else ('kills', 'sum')
+    ).reset_index()
+
+    player_stats['kill_avg'] = player_stats['kills'] / player_stats['wins']
+    player_stats['damage_avg'] = player_stats['damage'] / player_stats['wins']
+    player_stats = player_stats.sort_values(by='kills', ascending=False)
+    player_stats['redeploy_avg'] = player_stats.get('redeploys', player_stats['kills']) / player_stats['wins']
+    player_stats['assist_avg'] = player_stats['assists'] / player_stats['wins']
+    player_stats['dmg_per_kill'] = player_stats['damage'] / player_stats['kills'].replace(0, 1)
+
+    return {
+        'player_stats': player_stats,
+        'top_kills': player_stats.nlargest(3, 'kills'),
+        'top_avg_kills': player_stats.nlargest(3, 'kill_avg'),
+        'top_wins': player_stats.nlargest(3, 'wins'),
+        'top_high_redeploys': player_stats.nlargest(3, 'redeploy_avg'),
+        'top_waste_bullet': player_stats.nlargest(3, 'damage_avg'),
+        'top_kill_stealer': player_stats.nsmallest(3, 'dmg_per_kill'),
+        'top_low_redeploys': player_stats.nsmallest(3, 'redeploy_avg'),
+        'top_soft_puncher': player_stats.nlargest(3, 'assist_avg'),
+        'top_low_kills': player_stats.nsmallest(3, 'kill_avg')
+    }
 def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
     if output_path is None:
         output_path = os.path.join(RESULT_FILES_PATH, 'dashboard.png')
@@ -71,54 +100,23 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
     # Global Stats
     total_plays = df['match_id'].nunique()
     total_kills = int(df['kills'].sum())
+
+    highlights = get_monthly_highlights(df)
+    player_stats = highlights['player_stats']
+
+    total_kills_list = [(r['player_name'], str(int(r['kills']))) for _, r in highlights['top_kills'].iterrows()]
+    avg_kills_list = [(r['player_name'], f"{r['kill_avg']:.1f}") for _, r in highlights['top_avg_kills'].iterrows()]
+    wins_list = [(r['player_name'], str(int(r['wins']))) for _, r in highlights['top_wins'].iterrows()]
+    high_redeploys_list = [(r['player_name'], f"{r['redeploy_avg']:.1f}") for _, r in highlights['top_high_redeploys'].iterrows()]
+    waste_bullet_list = [(r['player_name'], f"{r['damage_avg']:.0f}") for _, r in highlights['top_waste_bullet'].iterrows()]
+    kill_stealer_list = [(r['player_name'], f"{r['dmg_per_kill']:.0f}") for _, r in highlights['top_kill_stealer'].iterrows()]
+    low_redeploys_list = [(r['player_name'], f"{r['redeploy_avg']:.1f}") for _, r in highlights['top_low_redeploys'].iterrows()]
+    soft_puncher_list = [(r['player_name'], f"{r['assist_avg']:.1f}") for _, r in highlights['top_soft_puncher'].iterrows()]
+    low_kills_list = [(r['player_name'], f"{r['kill_avg']:.1f}") for _, r in highlights['top_low_kills'].iterrows()]
+    total_plays = df['match_id'].nunique()
+    total_kills = int(df['kills'].sum())
     avg_kills = total_kills / total_plays if total_plays > 0 else 0
 
-    # Player Stats
-    player_stats = df.groupby('player_name').agg(
-        wins=('match_id', 'nunique'),
-        kills=('kills', 'sum'),
-        damage=('damage', 'sum'),
-        assists=('assists', 'sum') if 'assists' in df.columns else ('kills', 'sum'), # fallback
-        redeploys=('redeploys', 'sum') if 'redeploys' in df.columns else ('kills', 'sum') # fallback
-    ).reset_index()
-
-    player_stats['kill_avg'] = player_stats['kills'] / player_stats['wins']
-    player_stats['damage_avg'] = player_stats['damage'] / player_stats['wins']
-    
-    # Sort for table
-    player_stats = player_stats.sort_values(by='kills', ascending=False)
-
-    player_stats['redeploy_avg'] = player_stats.get('redeploys', player_stats['kills']) / player_stats['wins']
-    player_stats['assist_avg'] = player_stats['assists'] / player_stats['wins']
-    player_stats['dmg_per_kill'] = player_stats['damage'] / player_stats['kills'].replace(0, 1)
-
-    # Calculate Highlights using pure simple averages
-    top_kills = player_stats.nlargest(3, 'kills')
-    total_kills_list = [(r['player_name'], str(int(r['kills']))) for _, r in top_kills.iterrows()]
-
-    top_avg_kills = player_stats.nlargest(3, 'kill_avg')
-    avg_kills_list = [(r['player_name'], f"{r['kill_avg']:.1f}") for _, r in top_avg_kills.iterrows()]
-
-    top_wins = player_stats.nlargest(3, 'wins')
-    wins_list = [(r['player_name'], str(int(r['wins']))) for _, r in top_wins.iterrows()]
-
-    top_high_redeploys = player_stats.nlargest(3, 'redeploy_avg')
-    high_redeploys_list = [(r['player_name'], f"{r['redeploy_avg']:.1f}") for _, r in top_high_redeploys.iterrows()]
-
-    top_waste_bullet = player_stats.nlargest(3, 'damage_avg')
-    waste_bullet_list = [(r['player_name'], f"{r['damage_avg']:.0f}") for _, r in top_waste_bullet.iterrows()]
-
-    top_kill_stealer = player_stats.nsmallest(3, 'dmg_per_kill')
-    kill_stealer_list = [(r['player_name'], f"{r['dmg_per_kill']:.0f}") for _, r in top_kill_stealer.iterrows()]
-
-    top_low_redeploys = player_stats.nsmallest(3, 'redeploy_avg')
-    low_redeploys_list = [(r['player_name'], f"{r['redeploy_avg']:.1f}") for _, r in top_low_redeploys.iterrows()]
-
-    top_soft_puncher = player_stats.nlargest(3, 'assist_avg')
-    soft_puncher_list = [(r['player_name'], f"{r['assist_avg']:.1f}") for _, r in top_soft_puncher.iterrows()]
-
-    top_low_kills = player_stats.nsmallest(3, 'kill_avg')
-    low_kills_list = [(r['player_name'], f"{r['kill_avg']:.1f}") for _, r in top_low_kills.iterrows()]
 
     # Objectives were already calculated above using the full df
 
@@ -203,7 +201,7 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
     draw_highlight_col(x_cols_hl[0], y_hl_r1, "Total Kills", total_kills_list)
     draw_highlight_col(x_cols_hl[1], y_hl_r1, "Avg Kills", avg_kills_list)
     draw_highlight_col(x_cols_hl[2], y_hl_r1, "Wins", wins_list)
-    draw_highlight_col(x_cols_hl[3], y_hl_r1, "Rato de Esgoto", high_redeploys_list)
+    draw_highlight_col(x_cols_hl[3], y_hl_r1, "Highlander", high_redeploys_list)
     draw_highlight_col(x_cols_hl[4], y_hl_r1, "Gasta Bala", waste_bullet_list)
 
     draw_highlight_col(x_cols_hl[0], y_hl_r2, "Rouba Kill", kill_stealer_list)

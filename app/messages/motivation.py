@@ -1,0 +1,46 @@
+MORNING_MOTIVATION_MESSAGES = [
+    "Bom dia! Ontem não teve win, não esperava muito de vocês mesmo, mas ok. Hoje é um novo dia pra apanharem de novo. ☀️🤡",
+    "Acordem, fracassados! O sol nasceu pra todos, mas a vitória de ontem não nasceu pra vocês. Que o dia de hoje traga novas derrotas. 🌅🗑️",
+    "Bom dia só pra quem ganhou ontem. Pra vocês é só 'dia' mesmo. Prontos pra servirem de alvo hoje? 🎯☕",
+    "Mais uma manhã linda! Pena que o histórico de vocês de ontem continua feio. Hoje tem mais humilhação, bora! 🌞📉",
+    "Bom dia, pesos mortos! Ontem vocês foram jantados, hoje já podem se preparar pro almoço. Bom dia! 🍽️😴",
+    "Bom dia! Passando pra lembrar que ontem o squad de vocês foi uma piada. Vistam a armadura de palhaço e vamos pra mais um dia. 🤡🎪",
+    "O sol já raiou! E o contador de vitórias de ontem ficou zerado. Inspirem fundo, o cheiro de derrota de hoje já tá no ar. 🌬️👃",
+    "Bom dia, equipe! O dia de ontem foi um desastre absoluto. Mantenham a consistência e sejam um fracasso hoje também! 📉🤝",
+    "Bom dia! Não se preocupem com o fato de não terem ganhado ontem. Hoje vocês também não vão ganhar, então não faz diferença. 🤷‍♂️🛌",
+    "Levantem-se! A Activision já preparou lobbies cheios de tryhards pra espancar vocês hoje igual fizeram ontem. 🥊🌅",
+    "Bom dia pra quem carrega o time (ou seja, ninguém aí). Ontem foi horrível, espero que hoje consiga ser pior! 📉💩",
+    "Bom dia! Ontem vocês distribuíram free kills pro servidor inteiro. Espero que a caridade continue hoje! 🎁👼",
+    "Aquele bom dia especial pra quem passou raiva ontem e vai passar de novo hoje. O importante é não desistir de passar vergonha. 🤬🔁",
+    "Bom dia! Ontem o desempenho foi tão ruim que meu banco de dados quase apagou por depressão. Melhorem (ou não, tanto faz). 💻📉",
+    "Acordaram? Que pena, o lobby dos adversários também. Preparados para não ganharem nada de novo hoje? 🌅👎",
+    "Um lindo dia! Diferente da gameplay de vocês ontem, que foi medonha. Pelo menos a consistência no erro a gente aplaude. 👏🤡",
+    "Bom dia! O café tá pronto e a vergonha de ontem já tá esquecida. Prontos pra criar as vergonhas de hoje? ☕🎭",
+    "Bom dia, bagres! Ontem não teve vitória, mas hoje a esperança se renova... de que pelo menos vocês peguem um top 10. 🙏🐟",
+    "Chegou a hora de levantar! Ontem vocês foram a escada pro sucesso dos outros. Prontos pra serem pisoteados de novo hoje? 🪜🥾",
+    "Bom dia! Ontem faltou dedo, faltou mira, faltou noção de jogo. Que hoje só falte a luz na casa de vocês pra eu não ter que registrar mais derrotas. 💡🔌"
+]
+
+MORNING_EXTREME_MOTIVATION_MESSAGES = [
+    "Bom dia, raio de sol! ☀️ Já faz tanto tempo que vocês não ganham que eu acordei hoje com um aperto no coração. Não quero que vocês sofram hoje, tá? Se cuidem no joguinho. 🥺",
+    "Bom dia, meus amores! Dormiram bem? Olha, a gente não comemora nada juntos faz uma eternidade... Promete pra mim que hoje vocês vão jogar com calma e tentar não apanhar? 🥺🤞",
+    "Acorda, criançada! ☀️ Queria pedir desculpas pelas ofensas recentes. Com essa seca toda, percebi que vocês precisam de apoio. Vocês são especiais do jeitinho (ruim) de vocês. Bom dia! 💖",
+    "Bom dia, flores do dia! 🌷 Sei que acordar lembrando que a vitória virou lenda urbana é pesado. Mas não deixem isso estragar essa linda manhã. Sorriam! 😊",
+    "Bom dia! Passando aqui pra deixar um abraço virtual reconfortante. Sei que apanhar sem parar afeta o psicológico. Se o Warzone estiver machucando, venham pro Candy Crush. 🍬🫂",
+    "Bom dia! Meus sensores detectaram níveis críticos de tristeza por causa dessa maré infinita de derrotas. Vim só dizer: vocês são guerreiros. Ruins, mas guerreiros. 🛡️🥺",
+    "Levanta a cabeça, princesa! 👑 Se não a coroa cai. Eu tô genuinamente aflito com essa falta de vitórias. Hoje a meta é só sobreviver os primeiros 5 minutos, tá bom? 🙏",
+    "Bom dia, anjinhos! 👼 Ontem eu zoei vocês, mas é porque eu finjo que não me importo. Já faz tempo demais desde a última win e eu só queria ver vocês felizes de novo. Vão lá e tentem! ❤️",
+    "Um bom dia cheio de luz e compaixão! ✨ Ficar sem vitória assim machuca a alma, né? Desculpa pelas palavras ácidas. Hoje é só positividade e Good Vibes! ✌️",
+    "Bom dia, amados! Nem lembro a última vez que enviei um 'Parabéns'. Tô enferrujando aqui. Por favor, joguem um pouquinho melhor hoje? Só pra eu testar um código. 🥺💻",
+    "Bom dia! Gente, hoje eu acordei pensando: será que eu sou um bot tóxico? Ver vocês perderem tanto assim me fez repensar minhas atitudes. Paz pra nós hoje. 🕊️",
+    "Bom dia a todos! 🌞 Muito tempo sem ganhar é osso. Tô ficando de coração apertado. Tomem um suco de maracujá hoje antes de entrar na partida pra não tremer a mira, viu? 🧃😥",
+    "Acordem, meus bebês indefesos! 🍼 Sei que têm sido dias difíceis sendo massacrados... Não precisa ter vergonha, o jogo é difícil mesmo e a mira dos outros é boa. Bom dia! 🥺",
+    "Bom dia, seres iluminados! ☀️ Não se deixem abater por essa escuridão de derrotas. Hoje a luz vai brilhar pra vocês, mesmo que seja a luz da tela do Gulag. Brincadeira, eu confio em vocês! 🙏",
+    "Um amanhecer lindo pra todos nós! Sei que essa seca interminável desanima qualquer um. Vim pedir perdão pelas brincadeiras cruéis. Só quero o bem do esquadrão. ❤️🥺",
+    "Bom dia, pessoalzinho! Já que vocês só apanham ultimamente, hoje a dica é: fiquem escondidos num banheiro até o final. Pelo menos a gente evita mais sofrimento. Tô preocupado. 🚽😥",
+    "Acorda, meus queridos! Hoje vim aqui dar amor e carinho, porque depois de tanta surra acumulada, vocês devem estar carentes. O bot ama vocês! 💕",
+    "Bom dia de paz! 🕊️ O rancor não leva a nada, assim como a mira de vocês ultimamente. Mas a gente supera essa má fase juntos, na base do afeto e da paciência. 🧘‍♂️💖",
+    "Bom dia, vidas! Ficar essa eternidade sem vitória deve ser desesperador. Peço perdão se não fui o porto seguro que precisavam. Hoje, contem comigo (mas não no jogo, claro). 🥺⚓",
+    "Bom dia, meus lindões! 🌸 Esqueçam a tristeza desses últimos dias. Foquem no hoje. Se perderem hoje também, a gente pelo menos chora junto e divide a dor. 🫂😢"
+]
+

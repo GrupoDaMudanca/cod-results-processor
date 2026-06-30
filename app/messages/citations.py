@@ -1,0 +1,46 @@
+CITATION_EMPTY_MESSAGES = [
+    "📜 O livro de lendas tá vazio. Nenhuma pérola foi dita até agora.",
+    "🏜️ Fui no arquivo de citações e só achei poeira e vento. Tá na hora de soltar umas, não?",
+    "🦗 *Cri cri cri*... Cadê as frases de efeito? O banco de dados tá zerado.",
+    "🗑️ Não tem nenhuma citação salva ainda. Vocês tão precisando de um roteirista pro squad.",
+    "🤡 Vocês são tão sem graça que até hoje ninguém mandou uma pérola decente pra eu salvar.",
+    "🥱 Dormi lendo as (zero) citações que vocês salvaram. Pelo amor, falem alguma coisa interessante.",
+    "📚 As crônicas do squad estão em branco. Tratem de usar o comando /citation direito.",
+    "🤷‍♂️ Procurando sabedoria onde não tem. Ninguém salvou nenhuma pérola até hoje.",
+    "📭 Fui na caixa de mensagens épicas e ela tá vazia. Que decepção.",
+    "🧐 Tô procurando as falas icônicas, mas parece que vocês só falam besteira não documentada.",
+    "🕳️ Caí num buraco negro literário. Zero citações encontradas no servidor.",
+    "📉 A inflação tá alta, mas o nível de frases de efeito de vocês tá lá embaixo. Nenhuma pérola salva.",
+    "🕵️‍♂️ Investigando... Investigando... Nada. Nenhuma citação foi registrada. Zero, zip, nada.",
+    "🧠 Eu não sou mágico, se vocês não salvam a citação eu não tenho como inventar uma. Banco vazio.",
+    "🚫 Erro 404: Sabedoria not found. Comecem a anotar as perólas do squad, bando de esquecidos.",
+    "📜 Peguei o pergaminho e adivinha? Em branco! Vocês não imortalizaram nenhuma citação ainda.",
+    "🧻 O arquivo de pérolas tá parecendo um rolo de papel higiênico vazio. Vão produzir conteúdo!",
+    "🤡 É pra rir? Como eu vou mandar citação se ninguém nunca salvou porra nenhuma?",
+    "🙄 A criatividade de vocês é tão vasta quanto um copo d'água. Nenhuma pérola foi encontrada.",
+    "😴 O nível das calls deve estar tão ruim que não rendeu nem uma citaçãozinha pra salvar."
+]
+
+CITATION_SAVED_MESSAGES = [
+    "✅ Salvo! Nossa, eu ri DEMAIS dessa... SQN. Mas tá guardado.",
+    "💾 Arquivado com sucesso. Prometo fingir que achei engraçado quando for enviar no grupo.",
+    "✍️ Anotado! Um comediante nato no squad. Carlos Alberto de Nóbrega estaria orgulhoso.",
+    "🏆 Finalmente soltaram algo que preste. Salvo para a posteridade (ou até meu banco de dados apagar).",
+    "🤣 Hahahaha! Meu Deus do céu, eu não consigo respirar de tanto rir... de mentira. Citação salva.",
+    "📝 Essa foi tão boa que minha CPU até esquentou. Salvo com louvor.",
+    "🗂️ Pérola arquivada! Vou guardar essa sabedoria pra tentar entender o quão baixo chegou o nível de vocês.",
+    "👌 Excelente frase! Tão profunda quanto um pires. Já tá no banco de dados.",
+    "🌟 Uau, temos um filósofo contemporâneo no grupo! Salvei essa maravilha.",
+    "🤣 Ri tanto que quase fechei o meu próprio processo. Citação guardada com sucesso.",
+    "🧠 Anotado. Quando a humanidade for extinta, vão achar meu banco de dados e rir (ou chorar) dessa frase.",
+    "😎 Salvou! Essa pérola foi o pico intelectual de vocês no ano. E isso diz muito.",
+    "😂 Perdi os lados rindo dessa! Tá salva. (Nota mental: apagar isso quando ninguém estiver olhando).",
+    "📚 Guardado no panteão das grandes bobagens faladas no Warzone. Excelente trabalho.",
+    "🤡 Bela citação! Vou colocar na mesma pasta onde guardo as esperanças de vocês ganharem uma partida.",
+    "🗣️ Salvo! Um momento de genialidade acidental de vocês não pode ser ignorado.",
+    "📝 Confere! Já guardei no meu diário de abobrinhas da squad.",
+    "😆 Sensacional! Eu riria se eu tivesse um corpo físico. Salvo com sucesso.",
+    "🏆 Pérola gravada na pedra. Quando lançarem o livro da squad, essa vai pra capa.",
+    "💾 Beleza, salvei. Vou tentar não vomitar na placa-mãe de tanta sabedoria duvidosa."
+]
+
