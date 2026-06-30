@@ -24,10 +24,12 @@ def send_daily_citation():
     messenger = get_messenger()
     
     if citation:
-        messenger.send_message(f"📖 *Pérola do Dia:*\n\n{citation}", msg_type="CITATION_DAILY")
+        res = messenger.send_message(f"📖 *Pérola do Dia:*\n\n{citation}", msg_type="CITATION_DAILY")
+        if res:
+            mark_job_sent("citation")
     else:
         logger.info("No citations available to send.")
-    mark_job_sent("citation")
+        mark_job_sent("citation")
 
 def send_daily_win_check():
     """Checks if there was a win today and sends an acidic message."""
@@ -59,21 +61,22 @@ def send_daily_win_check():
             logger.error(f"Failed to read CSV for win check: {e}")
             
     if wins_today == 1:
-        messenger.send_message(random.choice(WIN_CHECK_SINGLE_WIN_MESSAGES), msg_type="WIN_CHECK_SINGLE")
+        res = messenger.send_message(random.choice(WIN_CHECK_SINGLE_WIN_MESSAGES), msg_type="WIN_CHECK_SINGLE")
     elif wins_today > 1:
         msg = random.choice(WIN_CHECK_MULTIPLE_WINS_MESSAGES).replace("{count}", str(wins_today))
-        messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE")
+        res = messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE")
     else:
         if days_without_win >= 3:
             msg = random.choice(WIN_CHECK_EXTREME_FAIL_MESSAGES).replace("{days}", str(days_without_win))
-            messenger.send_message(msg, msg_type="WIN_CHECK_EXTREME_FAIL")
+            res = messenger.send_message(msg, msg_type="WIN_CHECK_EXTREME_FAIL")
         elif days_without_win > 1:
             msg = random.choice(WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES).replace("{days}", str(days_without_win))
-            messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE_FAIL")
+            res = messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE_FAIL")
         else:
-            messenger.send_message(random.choice(WIN_CHECK_FAIL_MESSAGES), msg_type="WIN_CHECK_FAIL")
+            res = messenger.send_message(random.choice(WIN_CHECK_FAIL_MESSAGES), msg_type="WIN_CHECK_FAIL")
             
-    mark_job_sent("win_check")
+    if res:
+        mark_job_sent("win_check")
 
 def send_morning_motivation():
     """Checks if there were no wins yesterday and sends a 'motivational' message."""
@@ -116,16 +119,19 @@ def send_morning_motivation():
         logger.info("They already won today, skipping morning motivation.")
         return
 
+    res = False
     if wins_yesterday == 0:
         if days_without_win >= 4:
             msg = random.choice(MORNING_EXTREME_MOTIVATION_MESSAGES)
-            messenger.send_message(msg, msg_type="MORNING_EXTREME_MOTIVATION")
+            res = messenger.send_message(msg, msg_type="MORNING_EXTREME_MOTIVATION")
         else:
-            messenger.send_message(random.choice(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
+            res = messenger.send_message(random.choice(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
     else:
         logger.info("They won yesterday, so no motivation needed today.")
+        res = True
         
-    mark_job_sent("morning_motivation")
+    if res:
+        mark_job_sent("morning_motivation")
 
 def send_monthly_awards():
     """Sends the monthly dashboard and awards on the 1st of the month."""
@@ -160,8 +166,7 @@ def send_monthly_awards():
     }
     month_name = PT_MONTHS[first_day_prev_month.month]
     year = first_day_prev_month.year
-    if dashboard_path:
-        messenger.send_photo(dashboard_path, caption=None, msg_type="MONTHLY_DASHBOARD")
+    messenger.send_photo(dashboard_path, caption=None, msg_type="MONTHLY_DASHBOARD")
     
     intro_msg = random.choice(MONTHLY_AWARD_INTRO_MESSAGES)
     text_parts = [
@@ -193,8 +198,9 @@ def send_monthly_awards():
     text_parts.append(f"_{outro_msg}_")
             
     final_text = "\n\n".join(text_parts)
-    messenger.send_message(final_text, msg_type="MONTHLY_AWARDS")
-    mark_job_sent("monthly_awards")
+    res = messenger.send_message(final_text, msg_type="MONTHLY_AWARDS")
+    if res:
+        mark_job_sent("monthly_awards")
 
 def send_month_end_hype():
     """Sends a hype message in the last 5 days of the month."""
@@ -258,14 +264,20 @@ def send_month_end_hype():
         text_parts.append(f"_{outro_msg}_")
         
         msg = "\n\n".join(text_parts)
-        messenger.send_message(msg, msg_type="MONTH_END_HYPE")
+        res = messenger.send_message(msg, msg_type="MONTH_END_HYPE")
+        if res:
+            mark_job_sent("month_end_hype")
     else:
         logger.info(f"Not end of month yet (days left: {days_left}). Skipping hype.")
-        
-    mark_job_sent("month_end_hype")
+        mark_job_sent("month_end_hype")
 
 def recover_missed_jobs(timezone):
     """Checks the JSON state file and executes any jobs that were scheduled for today but missed."""
+    messenger = get_messenger()
+    if not messenger.wait_until_ready():
+        logger.error("Messenger not ready, aborting recovery of missed jobs.")
+        return
+        
     logger.info("Checking for missed cron jobs today...")
     state = get_cron_state()
     sent_jobs = state.get("sent_jobs", [])
@@ -343,7 +355,15 @@ def start_scheduler():
     except ValueError as e:
         logger.error(f"Invalid cron format: {CRON_END_OF_MONTH_HYPE_SCHEDULE}. Error: {e}. Month end hype cron disabled.")
 
-    recover_missed_jobs(timezone)
+    scheduler.add_job(recover_missed_jobs, args=[timezone])
+    
+    # Also schedule it to run every hour to retry any failed/missed jobs
+    try:
+        trigger_recovery = CronTrigger.from_crontab('0 * * * *', timezone=timezone)
+        scheduler.add_job(recover_missed_jobs, trigger_recovery, args=[timezone])
+        logger.info("Hourly recovery job scheduled.")
+    except ValueError as e:
+        logger.error(f"Failed to schedule hourly recovery job: {e}")
 
     scheduler.start()
     logger.info("Cron scheduler started.")

@@ -80,3 +80,31 @@ class WhatsAppClient(MessengerClient):
             else:
                 logger.error(f"Failed to send WhatsApp photo: {e}")
             return None
+
+    def wait_until_ready(self) -> bool:
+        if not WHATSAPP_CHAT_ID:
+            return False
+            
+        import time
+        from config import WHATSAPP_API_URL, WHATSAPP_SESSION_ID
+        status_url = f"{WHATSAPP_API_URL}/session/status/{WHATSAPP_SESSION_ID}"
+        
+        logger.info("Checking if WhatsApp session is ready...")
+        max_retries = 36 # 3 minutes total
+        for _ in range(max_retries):
+            try:
+                response = requests.get(status_url, timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    # {"success":true,"state":"CONNECTED"} or similar indicates ready
+                    if data.get("state") == "CONNECTED" or data.get("success") == True:
+                        logger.info("WhatsApp session is connected and ready.")
+                        return True
+            except Exception:
+                pass
+            
+            logger.info("WhatsApp session not ready yet. Retrying in 5 seconds...")
+            time.sleep(5)
+            
+        logger.warning("WhatsApp session did not become ready within the timeout.")
+        return False
