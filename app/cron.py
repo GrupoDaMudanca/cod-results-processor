@@ -207,16 +207,13 @@ def send_month_end_hype():
         
     now = datetime.now(timezone)
     last_day_of_month = calendar.monthrange(now.year, now.month)[1]
-    days_left = last_day_of_month - now.day
+    days_left = (last_day_of_month - now.day) + 1
     
-    if days_left <= 4:
+    if days_left <= 5:
         messenger = get_messenger()
-        if days_left == 0:
+        if days_left == 1:
             days_str = "algumas horas"
             title = "*ÚLTIMAS HORAS!*"
-        elif days_left == 1:
-            days_str = "1 dia"
-            title = "*FALTA 1 DIA!*"
         else:
             days_str = f"{days_left} dias"
             title = f"*FALTAM {days_left} DIAS!*"
