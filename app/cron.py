@@ -300,8 +300,10 @@ def recover_missed_jobs(timezone):
             trigger = CronTrigger.from_crontab(schedule, timezone=timezone)
             next_fire = trigger.get_next_fire_time(start_of_today, start_of_today)
             
-            # If the job was scheduled to run today, and that time is already past (or now)
-            if next_fire and next_fire <= now:
+            # If the job was scheduled to run today, and that time is already past (at least 10 mins ago)
+            # This prevents race conditions where the hourly recovery cron fires at the EXACT same time
+            # as the normal cron job.
+            if next_fire and next_fire <= (now - timedelta(minutes=10)):
                 logger.info(f"Recovering missed job: {job_id}")
                 try:
                     func()
