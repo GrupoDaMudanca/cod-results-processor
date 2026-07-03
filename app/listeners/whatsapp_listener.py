@@ -17,7 +17,30 @@ class WhatsAppListener(BaseListener):
         self.last_processed_id = 0
         self.webhook_server = WhatsAppWebhookServer(self.whatsapp_queue)
         self.webhook_server.start_in_background()
-        self.bot_id = None
+        self.bot_ids = []
+        self._init_bot_identity()
+
+    def _init_bot_identity(self):
+        from config import WHATSAPP_API_URL, WHATSAPP_SESSION_ID
+        try:
+            url = f"{WHATSAPP_API_URL}/client/getContacts/{WHATSAPP_SESSION_ID}"
+            import requests
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                contacts = response.json().get('contacts', [])
+                for c in contacts:
+                    if c.get('isMe'):
+                        b_id = c.get('id', {}).get('_serialized')
+                        if b_id and b_id not in self.bot_ids:
+                            self.bot_ids.append(b_id)
+                        
+                        lid = c.get('businessProfile', {}).get('id', {}).get('_serialized')
+                        if lid and lid not in self.bot_ids:
+                            self.bot_ids.append(lid)
+                            
+                logger.info(f"WhatsApp Bot Identity initialized: IDs={self.bot_ids}")
+        except Exception as e:
+            logger.error(f"Error fetching WhatsApp bot identity: {e}")
 
     def _get_chat_administrators(self, chat_id: str) -> list[str]:
         """Get a list of administrator user IDs for the WhatsApp group."""
@@ -136,14 +159,20 @@ class WhatsAppListener(BaseListener):
                 
             # Dynamic bot_id discovery from incoming message 'to' field
             msg_to = message.get('to')
-            if msg_to and msg_to.endswith('@c.us'):
-                self.bot_id = msg_to
+            if msg_to and msg_to.endswith('@c.us') and msg_to not in self.bot_ids:
+                self.bot_ids.append(msg_to)
 
             is_mentioned = False
-            mentioned_ids = message.get('mentionedIds', [])
+            raw_mentioned_ids = message.get('mentionedIds', [])
+            mentioned_ids = []
+            for m_id in raw_mentioned_ids:
+                if isinstance(m_id, dict) and '_serialized' in m_id:
+                    mentioned_ids.append(m_id['_serialized'])
+                elif isinstance(m_id, str):
+                    mentioned_ids.append(m_id)
             
             # Check native mentions
-            if (self.bot_id and self.bot_id in mentioned_ids) or (msg_to in mentioned_ids):
+            if any(b_id in mentioned_ids for b_id in self.bot_ids) or (msg_to in mentioned_ids):
                 is_mentioned = True
                 
             # Check if it's a private chat
@@ -153,8 +182,8 @@ class WhatsAppListener(BaseListener):
             if is_mentioned and text.strip():
                 # Clean up mentions to save tokens
                 import re
-                if self.bot_id:
-                    bot_num = self.bot_id.split('@')[0]
+                for b_id in self.bot_ids:
+                    bot_num = b_id.split('@')[0]
                     text = re.sub(f"(?i)@{bot_num}", "", text).strip()
                 
                 logger.info(f"WhatsApp Bot mentioned! Attempting AI routing for text: {text}")
