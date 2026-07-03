@@ -12,13 +12,13 @@ MODELS = [
     "llama-3.1-8b-instant"
 ]
 
-SYSTEM_PROMPT = """You are the internal command router for a Call of Duty statistics bot on Telegram and WhatsApp.
-The user spoke to the bot in natural language. Your goal is to map the user's intent to a valid command.
+SYSTEM_PROMPT_TEMPLATE = """You are the internal command router for a Call of Duty statistics bot on Telegram and WhatsApp.
+The user spoke to the bot in natural language. Your goal is to map the user's intent to a valid command. Current date: {current_date}
 
 SUPPORTED COMMANDS:
 - `/citation` -> requests a random citation/quote.
 - `/citation "quote text" - AUTHOR NAME` -> saves a new citation.
-- `/dashboard` -> requests the statistics dashboard. (Can receive dates as arguments: `/dashboard YYYY/MM` or `/dashboard YYYY`).
+- `/dashboard` -> requests the statistics dashboard. (Can receive dates as arguments: `/dashboard YYYY/MM` or `/dashboard YYYY` or a range `/dashboard YYYY/MM YYYY/MM`). If the user asks for "up to today" or similar, the second argument should be the current month/year.
 - `/backfill start YYYY/MM` -> starts backfilling old data for a specific month.
 - `/backfill end` -> stops the current backfill.
 
@@ -62,11 +62,15 @@ def route_message_to_command(text: str) -> str:
     # Clean the text from mention artifacts if possible, though the LLM can handle it.
     cleaned_text = text.strip()
     
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.replace("{current_date}", current_date)
+    
     for model in MODELS:
         payload = {
             "model": model,
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": cleaned_text}
             ],
             "temperature": 0.0,
