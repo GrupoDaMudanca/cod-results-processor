@@ -15,6 +15,25 @@ from app.listeners.base import BaseListener
 logger = logging.getLogger(__name__)
 
 class TelegramListener(BaseListener):
+    def __init__(self):
+        super().__init__()
+        self.bot_id = None
+        self.bot_username = None
+        self._init_bot_identity()
+
+    def _init_bot_identity(self):
+        from config import TELEGRAM_GET_ME_ENDPOINT
+        try:
+            response = requests.get(TELEGRAM_GET_ME_ENDPOINT, timeout=10).json()
+            if response.get('ok'):
+                self.bot_id = str(response.get('result', {}).get('id'))
+                self.bot_username = response.get('result', {}).get('username')
+                logger.info(f"Telegram Bot Identity: ID={self.bot_id}, Username={self.bot_username}")
+            else:
+                logger.error(f"Failed to get bot identity: {response}")
+        except Exception as e:
+            logger.error(f"Error getting bot identity: {e}")
+
     def _get_chat_administrators(self) -> list[str]:
         """Get a list of administrator user IDs for the chat."""
         from config import TELEGRAM_GET_CHAT_ADMINISTRATORS_ENDPOINT
@@ -105,6 +124,50 @@ class TelegramListener(BaseListener):
                 admins = self._get_chat_administrators()
                 is_admin = from_id in admins
                 handle_command(text, str(message_id), from_id, chat_id, is_admin)
+                continue
+                
+            # Check for native mention or private chat
+            is_mentioned = False
+            entities = message.get('entities', [])
+            for ent in entities:
+                if ent.get('type') == 'mention':
+                    offset = ent.get('offset', 0)
+                    length = ent.get('length', 0)
+                    mention_text = text[offset:offset+length]
+                    if self.bot_username and mention_text.lower() == f"@{self.bot_username.lower()}":
+                        is_mentioned = True
+                        break
+                        
+            chat_type = message.get('chat', {}).get('type')
+            reply_to_user_id = str(message.get('reply_to_message', {}).get('from', {}).get('id', ''))
+            
+            if chat_type == 'private' or reply_to_user_id == self.bot_id:
+                is_mentioned = True
+                
+            if is_mentioned and text.strip():
+                # Clean up mentions to save tokens
+                import re
+                if self.bot_username:
+                    text = re.sub(f"(?i)@{self.bot_username}", "", text).strip()
+                
+                logger.info(f"Bot mentioned! Attempting AI routing for text: {text}")
+                from app.ai_router import route_message_to_command
+                from app.messages.ai import AI_ERROR_MESSAGES, AI_INVALID_MAPPING_MESSAGES
+                import random
+                from app.messengers import get_messenger
+                
+                cmd_or_err = route_message_to_command(text)
+                messenger = get_messenger()
+                
+                if cmd_or_err == "ERROR_API":
+                    messenger.send_message(random.choice(AI_ERROR_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_ERROR")
+                elif cmd_or_err == "ERROR_MAPPING":
+                    messenger.send_message(random.choice(AI_INVALID_MAPPING_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_MAPPING_ERROR")
+                elif cmd_or_err:
+                    admins = self._get_chat_administrators()
+                    is_admin = from_id in admins
+                    logger.info(f"AI Routed command: {cmd_or_err}")
+                    handle_command(cmd_or_err, str(message_id), from_id, chat_id, is_admin)
                 continue
                 
             if self._is_message_photo(message):

@@ -17,6 +17,7 @@ class WhatsAppListener(BaseListener):
         self.last_processed_id = 0
         self.webhook_server = WhatsAppWebhookServer(self.whatsapp_queue)
         self.webhook_server.start_in_background()
+        self.bot_id = None
 
     def _get_chat_administrators(self, chat_id: str) -> list[str]:
         """Get a list of administrator user IDs for the WhatsApp group."""
@@ -131,6 +132,50 @@ class WhatsAppListener(BaseListener):
                 
                 is_admin = from_id in admins
                 handle_command(text, str(message_id), from_id, chat_id, is_admin=is_admin)
+                continue
+                
+            # Dynamic bot_id discovery from incoming message 'to' field
+            msg_to = message.get('to')
+            if msg_to and msg_to.endswith('@c.us'):
+                self.bot_id = msg_to
+
+            is_mentioned = False
+            mentioned_ids = message.get('mentionedIds', [])
+            
+            # Check native mentions
+            if (self.bot_id and self.bot_id in mentioned_ids) or (msg_to in mentioned_ids):
+                is_mentioned = True
+                
+            # Check if it's a private chat
+            if chat_id and not chat_id.endswith('@g.us'):
+                is_mentioned = True
+                
+            if is_mentioned and text.strip():
+                # Clean up mentions to save tokens
+                import re
+                if self.bot_id:
+                    bot_num = self.bot_id.split('@')[0]
+                    text = re.sub(f"(?i)@{bot_num}", "", text).strip()
+                
+                logger.info(f"WhatsApp Bot mentioned! Attempting AI routing for text: {text}")
+                from app.ai_router import route_message_to_command
+                from app.messages.ai import AI_ERROR_MESSAGES, AI_INVALID_MAPPING_MESSAGES
+                import random
+                from app.messengers import get_messenger
+                
+                cmd_or_err = route_message_to_command(text)
+                messenger = get_messenger()
+                
+                if cmd_or_err == "ERROR_API":
+                    messenger.send_message(random.choice(AI_ERROR_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_ERROR")
+                elif cmd_or_err == "ERROR_MAPPING":
+                    messenger.send_message(random.choice(AI_INVALID_MAPPING_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_MAPPING_ERROR")
+                elif cmd_or_err:
+                    admins = self._get_chat_administrators(chat_id)
+                    from_id = message.get('author') or message.get('from')
+                    is_admin = from_id in admins
+                    logger.info(f"AI Routed command: {cmd_or_err}")
+                    handle_command(cmd_or_err, str(message_id), from_id, chat_id, is_admin=is_admin)
                 continue
                 
             if message.get('hasMedia', False) and message.get('type') == 'image':
