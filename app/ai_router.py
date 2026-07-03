@@ -19,7 +19,7 @@ SUPPORTED COMMANDS:
 - `/citation` -> requests a random citation/quote.
 - `/citation "quote text" - AUTHOR NAME` -> saves a new citation.
 - `/dashboard` -> requests the statistics dashboard. (Can receive dates as arguments: `/dashboard YYYY/MM` or `/dashboard YYYY` or a range `/dashboard YYYY/MM YYYY/MM`). If the user asks for "up to today" or similar, the second argument should be the current month/year.
-- `/backfill start YYYY/MM` -> starts backfilling old data for a specific month.
+- `/backfill YYYY/MM` -> starts backfilling old data for a specific month. (Must have a specific month. If the user only specifies a year or is vague, map to `null`). If they say "fevereiro", assume the current year.
 - `/backfill end` -> stops the current backfill.
 
 STRICT RULES:
@@ -38,6 +38,12 @@ User: "@bot me mostre as estatísticas"
 Output: {"command_text": "/dashboard"}
 
 User: "faz um café pra mim"
+Output: {"command_text": null}
+
+User: "@bot ler partida de fevereiro"
+Output: {"command_text": "/backfill 2026/02"}
+
+User: "@bot ler partida desse ano"
 Output: {"command_text": null}
 """
 

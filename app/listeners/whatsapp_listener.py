@@ -65,6 +65,26 @@ class WhatsAppListener(BaseListener):
             logger.error(f'Failed to get WhatsApp chat administrators: {e}')
             return []
 
+    def _resolve_sender_id(self, from_id: str) -> str:
+        if not from_id or not from_id.endswith('@lid'):
+            return from_id
+            
+        try:
+            from config import WHATSAPP_API_URL, WHATSAPP_SESSION_ID
+            import requests
+            url = f"{WHATSAPP_API_URL}/contact/getClassInfo/{WHATSAPP_SESSION_ID}"
+            contact_resp = requests.post(url, json={"contactId": from_id})
+            if contact_resp.status_code == 200:
+                contact_data = contact_resp.json()
+                if contact_data.get('success'):
+                    real_id = contact_data.get('contact', {}).get('id', {}).get('_serialized')
+                    if real_id:
+                        return real_id
+        except Exception as e:
+            logger.error(f"Failed to resolve .lid contact: {e}")
+            
+        return from_id
+
     def _download_whatsapp_media(self, message):
         message_id_obj = message.get('id', {})
         message_id = message_id_obj.get('id')
@@ -138,20 +158,7 @@ class WhatsAppListener(BaseListener):
             if text.startswith('/'):
                 admins = self._get_chat_administrators(chat_id)
                 from_id = message.get('author') or message.get('from')
-                
-                # If from_id is a .lid, resolve it to the .c.us ID using the wwebjs-api contact endpoint
-                if from_id and from_id.endswith('@lid'):
-                    try:
-                        url = f"{WHATSAPP_API_URL}/contact/getClassInfo/{WHATSAPP_SESSION_ID}"
-                        contact_resp = requests.post(url, json={"contactId": from_id})
-                        if contact_resp.status_code == 200:
-                            contact_data = contact_resp.json()
-                            if contact_data.get('success'):
-                                real_id = contact_data.get('contact', {}).get('id', {}).get('_serialized')
-                                if real_id:
-                                    from_id = real_id
-                    except Exception as e:
-                        logger.error(f"Failed to resolve .lid contact: {e}")
+                from_id = self._resolve_sender_id(from_id)
                 
                 is_admin = from_id in admins
                 handle_command(text, str(message_id), from_id, chat_id, is_admin=is_admin)
@@ -202,6 +209,7 @@ class WhatsAppListener(BaseListener):
                 elif cmd_or_err:
                     admins = self._get_chat_administrators(chat_id)
                     from_id = message.get('author') or message.get('from')
+                    from_id = self._resolve_sender_id(from_id)
                     is_admin = from_id in admins
                     logger.info(f"AI Routed command: {cmd_or_err}")
                     handle_command(cmd_or_err, str(message_id), from_id, chat_id, is_admin=is_admin)
