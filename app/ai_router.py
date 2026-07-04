@@ -21,6 +21,7 @@ SUPPORTED COMMANDS:
 - `/dashboard` -> requests the statistics dashboard. (Can receive dates as arguments: `/dashboard YYYY/MM` or `/dashboard YYYY` or a range `/dashboard YYYY/MM YYYY/MM`). If the user asks for "up to today" or similar, the second argument should be the current month/year.
 - `/backfill YYYY/MM` -> starts backfilling old data for a specific month. (Must have a specific month. If the user only specifies a year or is vague, map to `null`). If they say "fevereiro", assume the current year.
 - `/backfill end` -> stops the current backfill.
+- `/reload` -> reloads the player names database. Use this when a user says a player joined, someone changed their nick, or asks to update/reload the clan names.
 
 STRICT RULES:
 1. You must not converse, you must not greet, you must not explain anything.
@@ -45,6 +46,12 @@ Output: {"command_text": "/backfill 2026/02"}
 
 User: "@bot ler partida desse ano"
 Output: {"command_text": null}
+
+User: "@bot o Pedro entrou pro clã, já botei o nick dele"
+Output: {"command_text": "/reload"}
+
+User: "@bot mudei meu nick"
+Output: {"command_text": "/reload"}
 """
 
 def route_message_to_command(text: str) -> str:

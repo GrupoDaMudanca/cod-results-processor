@@ -167,6 +167,20 @@ def handle_command(text: str, message_id: str, from_id: str, chat_id: str, is_ad
             else:
                 messenger.send_message(random.choice(CITATION_EMPTY_MESSAGES), reply_to_message_id=message_id, msg_type="CITATION_EMPTY")
 
+    elif text.startswith('/reload'):
+        from app.commands import reload_missing_player_names
+        from app.messages import RELOAD_START_MESSAGES, RELOAD_SUCCESS_MESSAGES, RELOAD_NO_CHANGES_MESSAGES
+        
+        messenger.send_message(random.choice(RELOAD_START_MESSAGES), reply_to_message_id=message_id, msg_type="RELOAD_START")
+        
+        updated = reload_missing_player_names()
+        if updated > 0:
+            msg = random.choice(RELOAD_SUCCESS_MESSAGES).replace('{count}', str(updated))
+            messenger.send_message(msg, reply_to_message_id=message_id, msg_type="RELOAD_SUCCESS")
+        else:
+            messenger.send_message(random.choice(RELOAD_NO_CHANGES_MESSAGES), reply_to_message_id=message_id, msg_type="RELOAD_NO_CHANGES")
+
     elif text.startswith('/'):
         # Log unexpected commands if needed
         pass
+

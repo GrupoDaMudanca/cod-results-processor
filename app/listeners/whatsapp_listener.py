@@ -194,6 +194,15 @@ class WhatsAppListener(BaseListener):
                     text = re.sub(f"(?i)@{bot_num}", "", text).strip()
                 
                 logger.info(f"WhatsApp Bot mentioned! Attempting AI routing for text: {text}")
+                
+                if len(text) > 300:
+                    from app.messages.ai import AI_TOO_LONG_MESSAGES
+                    import random
+                    from app.messengers import get_messenger
+                    messenger = get_messenger()
+                    messenger.send_message(random.choice(AI_TOO_LONG_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_TOO_LONG")
+                    continue
+                    
                 from app.ai_router import route_message_to_command
                 from app.messages.ai import AI_ERROR_MESSAGES, AI_INVALID_MAPPING_MESSAGES
                 import random

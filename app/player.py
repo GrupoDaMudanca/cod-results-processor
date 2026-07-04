@@ -28,12 +28,5 @@ class Player(Serializable, ABC):
 
     @staticmethod
     def __get_names() -> dict:
-        with open(PLAYER_NAMES_FILE_PATH, 'r') as player_names_file:
-
-            return {
-                player_id: player_name
-                for player_name, player_ids
-                in json.loads(player_names_file.read()).items()
-                for player_id in
-                player_ids
-            }
+        from app.helpers import get_player_names_map
+        return get_player_names_map()

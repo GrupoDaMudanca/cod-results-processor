@@ -61,3 +61,16 @@ def match_exists(match_id: str) -> bool:
         return match_id in df['match_id'].values
     except Exception:
         return False
+
+
+def get_player_names_map() -> dict:
+    import json
+    from config import PLAYER_NAMES_FILE_PATH
+    with open(PLAYER_NAMES_FILE_PATH, 'r') as player_names_file:
+        return {
+            player_id: player_name
+            for player_name, player_ids
+            in json.loads(player_names_file.read()).items()
+            for player_id in
+            player_ids
+        }
