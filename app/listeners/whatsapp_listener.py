@@ -97,14 +97,14 @@ class WhatsAppListener(BaseListener):
         logger.info(f"Downloading WhatsApp media for {message_id}")
         
         try:
-            # For downloading media, the API expects the short ID, not the _serialized ID
-            short_id = message_id_obj.get('id')
+            # For downloading media, the patched API expects the _serialized ID
+            serialized_id = message_id_obj.get('_serialized')
             chat_id = message.get('from')
             
             download_url = f"{WHATSAPP_DOWNLOAD_MEDIA_ENDPOINT}"
             payload = {
                 "chatId": chat_id,
-                "messageId": short_id
+                "messageId": serialized_id
             }
             media_resp = requests.post(download_url, json=payload)
             media_resp.raise_for_status()
@@ -128,6 +128,14 @@ class WhatsAppListener(BaseListener):
             
         except Exception as e:
             logger.error(f"Failed to download WhatsApp media: {e}")
+            try:
+                from app.messengers import get_messenger
+                from app.messages.system import ERROR_UNEXPECTED_MESSAGES
+                import random
+                messenger = get_messenger()
+                messenger.send_message(random.choice(ERROR_UNEXPECTED_MESSAGES), reply_to_message_id=str(message_id), msg_type="ERROR")
+            except:
+                pass
 
     def poll_and_download(self, timeout: int = 30) -> int:
         elapsed = 0
