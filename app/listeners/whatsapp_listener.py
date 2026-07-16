@@ -22,6 +22,14 @@ class WhatsAppListener(BaseListener):
 
     def _init_bot_identity(self):
         from config import WHATSAPP_API_URL, WHATSAPP_SESSION_ID
+        from app.messengers.whatsapp_client import WhatsAppClient
+        
+        # Espera a sessão inicializar antes de bater na API
+        client = WhatsAppClient()
+        if not client.wait_until_ready():
+            logger.warning("WhatsApp session did not become ready. Cannot fetch bot identity yet.")
+            return False
+            
         try:
             url = f"{WHATSAPP_API_URL}/client/getContacts/{WHATSAPP_SESSION_ID}"
             import requests
@@ -38,9 +46,12 @@ class WhatsAppListener(BaseListener):
                         if lid and lid not in self.bot_ids:
                             self.bot_ids.append(lid)
                             
+                            
                 logger.info(f"WhatsApp Bot Identity initialized: IDs={self.bot_ids}")
+                return True
         except Exception as e:
             logger.error(f"Error fetching WhatsApp bot identity: {e}")
+        return False
 
     def _get_chat_administrators(self, chat_id: str) -> list[str]:
         """Get a list of administrator user IDs for the WhatsApp group."""
@@ -154,6 +165,9 @@ class WhatsAppListener(BaseListener):
             
         logger.info(f"Processing WhatsApp batch of {len(batch)} messages.")
         
+        if not self.bot_ids:
+            self._init_bot_identity()
+        
         has_photo = False
         processing_msg_sent = False
         for message in batch:
@@ -181,8 +195,13 @@ class WhatsAppListener(BaseListener):
             raw_mentioned_ids = message.get('mentionedIds', [])
             mentioned_ids = []
             for m_id in raw_mentioned_ids:
-                if isinstance(m_id, dict) and '_serialized' in m_id:
-                    mentioned_ids.append(m_id['_serialized'])
+                if isinstance(m_id, dict):
+                    if '_serialized' in m_id:
+                        mentioned_ids.append(m_id['_serialized'])
+                    elif '$1' in m_id:
+                        mentioned_ids.append(m_id['$1'])
+                    elif 'id' in m_id:
+                        mentioned_ids.append(m_id['id'])
                 elif isinstance(m_id, str):
                     mentioned_ids.append(m_id)
             
