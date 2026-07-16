@@ -21,7 +21,7 @@ class MatchRecord(Serializable, ABC):
         date: str = None
     ):
         self.player = Player(
-            raw_player_name=raw_player_name
+            raw_player_name=raw_player_name.strip() if raw_player_name else ""
         )
         self.score = score
         self.kills = kills

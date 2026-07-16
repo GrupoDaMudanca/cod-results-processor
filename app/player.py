@@ -20,7 +20,7 @@ class Player(Serializable, ABC):
 
     @property
     def id(self):
-        return self.__raw_player_name.split(']')[-1]
+        return self.__raw_player_name.split(']')[-1].strip()
 
     @property
     def name(self) -> str:

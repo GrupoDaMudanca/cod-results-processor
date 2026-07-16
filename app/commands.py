@@ -18,7 +18,7 @@ def reload_missing_player_names() -> int:
         updated_rows = 0
         for index, row in df.iterrows():
             if pd.isna(row['player_name']) or str(row['player_name']).strip() in ('', 'None', 'nan'):
-                p_id = str(row['player_id'])
+                p_id = str(row['player_id']).strip()
                 if p_id in names_dict:
                     df.at[index, 'player_name'] = names_dict[p_id]
                     updated_players.add(names_dict[p_id])
