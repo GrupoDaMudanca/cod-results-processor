@@ -36,3 +36,4 @@ urllib3==2.2.3
 watchdog==5.0.0
 
 flask==3.0.3
+thefuzz==0.22.1

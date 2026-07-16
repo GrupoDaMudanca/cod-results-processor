@@ -148,7 +148,22 @@ def handle_command(text: str, message_id: str, from_id: str, chat_id: str, is_ad
         else:
             messenger.send_message(random.choice(DASHBOARD_NO_DATA_MESSAGES), reply_to_message_id=message_id, msg_type="DASHBOARD_NO_DATA")
     
-    elif text.startswith(('/citation', '/citacao')):
+    elif text.startswith('/searchcitation'):
+        from app.citations import search_citations
+        from app.messages.citations import CITATION_SEARCH_EMPTY_MESSAGES
+        
+        args = text.split(maxsplit=1)
+        if len(args) > 1:
+            keywords = args[1].strip().split()
+            citation = search_citations(keywords)
+            if citation:
+                messenger.send_message(f"📖 *Pérola:*\n\n{citation}", reply_to_message_id=message_id, msg_type="CITATION_SEARCH_SUCCESS")
+            else:
+                messenger.send_message(random.choice(CITATION_SEARCH_EMPTY_MESSAGES), reply_to_message_id=message_id, msg_type="CITATION_SEARCH_EMPTY")
+        else:
+            messenger.send_message(random.choice(CITATION_SEARCH_EMPTY_MESSAGES), reply_to_message_id=message_id, msg_type="CITATION_SEARCH_EMPTY")
+
+    elif text.startswith(('/citation')):
         from app.citations import save_citation, get_random_citation
         from app.messages import CITATION_EMPTY_MESSAGES, CITATION_SAVED_MESSAGES, ERROR_UNEXPECTED_MESSAGES
         

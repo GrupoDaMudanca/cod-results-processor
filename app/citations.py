@@ -49,3 +49,48 @@ def get_random_citation() -> str:
     except Exception as e:
         logger.error(f"Failed to read citations: {e}")
         return None
+
+def search_citations(keywords: list[str]) -> str | None:
+    """Returns a random citation that matches ALL the provided keywords (case-insensitive)."""
+    if not os.path.exists(CITATIONS_FILE_PATH):
+        return None
+        
+    try:
+        matched_citations = []
+        lower_keywords = [kw.lower() for kw in keywords if kw.strip()]
+        if not lower_keywords:
+            return None
+
+        with open(CITATIONS_FILE_PATH, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        entry = json.loads(line)
+                        text = entry.get("text", "")
+                        lower_text = text.lower()
+                        
+                        from thefuzz import fuzz
+                        
+                        match = True
+                        for kw in lower_keywords:
+                            if kw in lower_text:
+                                continue
+                            if fuzz.partial_ratio(kw, lower_text) >= 80:
+                                continue
+                            match = False
+                            break
+                            
+                        if match:
+                            matched_citations.append(text)
+                    except json.JSONDecodeError:
+                        continue
+        
+        if not matched_citations:
+            return None
+            
+        return random.choice(matched_citations)
+    except Exception as e:
+        logger.error(f"Failed to search citations: {e}")
+        return None
+
