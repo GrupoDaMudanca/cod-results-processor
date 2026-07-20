@@ -195,6 +195,21 @@ def handle_command(text: str, message_id: str, from_id: str, chat_id: str, is_ad
         else:
             messenger.send_message(random.choice(RELOAD_NO_CHANGES_MESSAGES), reply_to_message_id=message_id, msg_type="RELOAD_NO_CHANGES")
 
+    elif text.startswith('/erase'):
+        from app.state_erase import get_erase, set_erase, clear_erase
+        from app.messages.erase import ERASE_ACTIVE_MESSAGES, ERASE_INACTIVE_MESSAGES
+        
+        if not is_admin:
+            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message_id=message_id, msg_type="UNAUTHORIZED")
+            return
+            
+        if get_erase():
+            clear_erase()
+            messenger.send_message(random.choice(ERASE_INACTIVE_MESSAGES), reply_to_message_id=message_id, msg_type="ERASE_INACTIVE")
+        else:
+            set_erase()
+            messenger.send_message(random.choice(ERASE_ACTIVE_MESSAGES), reply_to_message_id=message_id, msg_type="ERASE_ACTIVE")
+
     elif text.startswith('/'):
         # Log unexpected commands if needed
         pass

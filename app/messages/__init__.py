@@ -7,3 +7,4 @@ from .monthly import *
 from .dashboard import *
 from .backfill import *
 from .reload import *
+from .erase import *

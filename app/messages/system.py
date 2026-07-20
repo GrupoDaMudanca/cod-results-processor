@@ -243,4 +243,3 @@ INVALID_IMAGE_MESSAGES = [
     "🔋 Gastando minha energia pra processar foto inútil? Você é um atraso de vida. Imagem ignorada.",
     "😑 E o prêmio de asno do dia vai para... Quem mandou essa foto! Se quer processar placar, manda placar. Simples."
 ]
-

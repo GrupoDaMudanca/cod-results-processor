@@ -201,6 +201,37 @@ def process_files(root_path: str) -> List[Match]:
                 )
                 continue
 
+        from app.state_erase import get_erase, clear_erase
+        from app.helpers import delete_match
+        from app.messages.erase import ERASE_DELETED_MESSAGES, ERASE_NOT_FOUND_MESSAGES, ERASE_INACTIVE_MESSAGES
+
+        if get_erase():
+            deleted_count = delete_match(match.id)
+            if deleted_count > 0:
+                if message_id:
+                    msg_text = random.choice(ERASE_DELETED_MESSAGES).format(count=deleted_count)
+                    messenger.send_message(
+                        msg_text,
+                        reply_to_message_id=message_id,
+                        msg_type="ERASE_DELETED"
+                    )
+                clear_erase()
+            else:
+                if message_id:
+                    messenger.send_message(
+                        random.choice(ERASE_NOT_FOUND_MESSAGES),
+                        reply_to_message_id=message_id,
+                        msg_type="ERASE_NOT_FOUND"
+                    )
+                clear_erase()
+                
+            if message_id:
+                messenger.send_message(
+                    random.choice(ERASE_INACTIVE_MESSAGES),
+                    msg_type="ERASE_INACTIVE"
+                )
+            continue
+
         # Check for duplicates
         if match_exists(match.id):
             logger.info(f'Match {match.id} already exists, skipping.')

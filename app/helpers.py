@@ -63,6 +63,25 @@ def match_exists(match_id: str) -> bool:
         return False
 
 
+def delete_match(match_id: str) -> int:
+    """Deletes all rows with the given match_id from the latest CSV. Returns the number of deleted rows."""
+    if file_valid(LATEST_OUTPUT_FILE_PATH):
+        return 0
+
+    try:
+        df = pd.read_csv(LATEST_OUTPUT_FILE_PATH)
+        initial_len = len(df)
+        df = df[df['match_id'] != match_id]
+        deleted_count = initial_len - len(df)
+        if deleted_count > 0:
+            df.to_csv(LATEST_OUTPUT_FILE_PATH, index=False)
+        return deleted_count
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error deleting match {match_id}: {e}")
+        return 0
+
+
 def get_player_names_map() -> dict:
     import json
     from config import PLAYER_NAMES_FILE_PATH

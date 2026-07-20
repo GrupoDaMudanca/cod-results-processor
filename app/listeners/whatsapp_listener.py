@@ -98,7 +98,7 @@ class WhatsAppListener(BaseListener):
 
     def _download_whatsapp_media(self, message):
         message_id_obj = message.get('id', {})
-        message_id = message_id_obj.get('id')
+        message_id = message_id_obj.get('_serialized') or message_id_obj.get('id')
         date = message.get('timestamp')
         
         has_media = message.get('hasMedia', False)
@@ -257,12 +257,22 @@ class WhatsAppListener(BaseListener):
                 if not processing_msg_sent:
                     try:
                         from app.messengers import get_messenger
-                        from app.messages import PROCESSING_MESSAGES
+                        from app.messages import PROCESSING_MESSAGES, ERASE_PROCESSING_MESSAGES
+                        from app.state_erase import get_erase
                         import random
                         messenger = get_messenger()
+                        
+                        if get_erase():
+                            msg_pool = ERASE_PROCESSING_MESSAGES
+                            msg_type = "ERASE_PROCESSING"
+                        else:
+                            msg_pool = PROCESSING_MESSAGES
+                            msg_type = "PROCESSING"
+                            
                         messenger.send_message(
-                            random.choice(PROCESSING_MESSAGES),
-                            msg_type="PROCESSING"
+                            random.choice(msg_pool),
+                            reply_to_message_id=str(message_id),
+                            msg_type=msg_type
                         )
                         processing_msg_sent = True
                     except Exception as e:

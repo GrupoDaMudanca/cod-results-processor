@@ -32,8 +32,20 @@ def consolidate_data():
         new_dfs = [pd.read_csv(path) for path in paths]
         new_combined = pd.concat(new_dfs)
 
-        # Ensure both DataFrames have compatible columns
-        all_columns = list(set(latest_df.columns.tolist() + new_combined.columns.tolist()))
+        # Preserve a consistent column order
+        header_order = ['match_id', 'player_id', 'player_name', 'score', 'kills', 'assists', 'redeploys', 'damage', 'date']
+        all_columns = []
+        
+        # Add expected columns first
+        for col in header_order:
+            if col in latest_df.columns or col in new_combined.columns:
+                all_columns.append(col)
+                
+        # Add any extra columns that might exist
+        for df_cols in [latest_df.columns.tolist(), new_combined.columns.tolist()]:
+            for col in df_cols:
+                if col not in all_columns:
+                    all_columns.append(col)
 
         latest_df = latest_df.reindex(columns=all_columns)
         new_combined = new_combined.reindex(columns=all_columns)

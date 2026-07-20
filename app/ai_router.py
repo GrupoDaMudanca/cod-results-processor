@@ -23,6 +23,7 @@ SUPPORTED COMMANDS:
 - `/backfill YYYY/MM` -> starts backfilling old data for a specific month. (Must have a specific month. If the user only specifies a year or is vague, map to `null`). If they say "fevereiro", assume the current year.
 - `/backfill end` -> stops the current backfill.
 - `/reload` -> reloads the player names database. Use this when a user says a player joined, someone changed their nick, or asks to update/reload the clan names.
+- `/erase` -> toggles the erase mode to delete a match. Use this if the user asks to "apagar", "deletar", "excluir", "ligar o modo apagar" or similar intent to remove a match/print.
 
 STRICT RULES:
 1. You must not converse, you must not greet, you must not explain anything.
@@ -77,6 +78,12 @@ Output: {"command_text": "/reload"}
 
 User: "@bot mudei meu nick"
 Output: {"command_text": "/reload"}
+
+User: "@bot apaga essa partida aí"
+Output: {"command_text": "/erase"}
+
+User: "bot, liga o modo de apagar partida"
+Output: {"command_text": "/erase"}
 """
 
 def route_message_to_command(text: str) -> str:
