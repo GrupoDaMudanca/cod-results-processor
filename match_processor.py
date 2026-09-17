@@ -2,6 +2,7 @@ import json
 import os
 import random
 import logging
+import time
 from datetime import datetime
 from typing import List
 
@@ -80,7 +81,7 @@ def read_image_metadata(image_path: str) -> dict:
     return {}
 
 
-def process_file(image_path: str, date: str = None) -> Match:
+def process_file(image_path: str, date: str = None, message_id: str = None) -> Match:
     logger.info(f'Processing {image_path}')
 
     uploaded_file = client.files.upload(file=image_path)
@@ -105,19 +106,69 @@ def process_file(image_path: str, date: str = None) -> Match:
         "HOWEVER, do NOT forcefully match completely different names or different players (e.g. 'VictorB' is completely different from 'Victor Augusto'). If it's a different player, output exactly what is on the screen."
     )
 
-    result = client.models.generate_content(
-        model=GEMINI_DESIRED_MODEL,
-        contents=[uploaded_file, "\n\n", prompt],
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=RESULT_SCHEMA
-        )
-    )
+    model_ladder = [
+        "gemini-3.5-flash-lite",
+        "gemini-3.1-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
+    ]
+    max_retries = 5
+    
+    last_error = None
+    success = False
+    result_text = ""
+    overall_attempt = 0
+    
+    for model in model_ladder:
+        for attempt in range(1, max_retries + 1):
+            overall_attempt += 1
+            try:
+                logger.info(f"Analyzing image {image_path} with model '{model}' (attempt {attempt}/{max_retries})...")
+                result = client.models.generate_content(
+                    model=model,
+                    contents=[uploaded_file, "\n\n", prompt],
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=RESULT_SCHEMA
+                    )
+                )
+                result_text = result.text
+                success = True
+                logger.info(f"Successfully processed image {image_path} with model '{model}'.")
+                break
+            except Exception as e:
+                last_error = e
+                err_str = str(e)
+                is_rate_limit = any(c in err_str for c in ["429", "503", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "ResourceExhausted", "quota"])
+                wait_time = min(2 ** attempt, 32) if is_rate_limit else 1.5
+                
+                logger.warning(f"Attempt {attempt}/{max_retries} on model '{model}' failed for image {image_path}: {e}. Retrying in {wait_time}s...")
+                
+                if message_id:
+                    messenger = get_messenger()
+                    from app.messages.system import FIRST_RETRY_MESSAGES, SUBSEQUENT_RETRY_MESSAGES
+                    if overall_attempt == 1:
+                        msg = random.choice(FIRST_RETRY_MESSAGES)
+                    else:
+                        msg = random.choice(SUBSEQUENT_RETRY_MESSAGES)
+                    
+                    messenger.send_message(
+                        msg,
+                        reply_to_message_id=message_id,
+                        msg_type="RETRY_BACKOFF"
+                    )
+                
+                time.sleep(wait_time)
+                
+        if success:
+            break
 
     # Delete the uploaded file from Google servers
     client.files.delete(name=uploaded_file.name)
 
-    result_text = result.text
+    if not success:
+        logger.error(f"Failed to process image {image_path} across models {model_ladder}. Last error: {last_error}")
+        raise last_error
 
     logger.info(f"AI identified stats:\n{result_text}")
 
@@ -165,7 +216,7 @@ def process_files(root_path: str) -> List[Match]:
 
         # Process the image with Gemini
         try:
-            match = process_file(image_path, date=date_str)
+            match = process_file(image_path, date=date_str, message_id=message_id)
             if not match:
                 if message_id:
                     messenger.send_message(
