@@ -21,11 +21,9 @@ class WhatsAppClient(MessengerClient):
         }
         
         if reply_to_message_id:
-            payload["options"] = {
-                "quoted": {
-                    "key": {
-                        "id": reply_to_message_id
-                    }
+            payload["quoted"] = {
+                "key": {
+                    "id": reply_to_message_id
                 }
             }
         
@@ -66,11 +64,9 @@ class WhatsAppClient(MessengerClient):
             }
             
             if reply_to_message_id:
-                payload["options"] = {
-                    "quoted": {
-                        "key": {
-                            "id": reply_to_message_id
-                        }
+                payload["quoted"] = {
+                    "key": {
+                        "id": reply_to_message_id
                     }
                 }
             
