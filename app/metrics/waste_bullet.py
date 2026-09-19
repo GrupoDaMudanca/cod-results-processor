@@ -47,7 +47,7 @@ def calculate_outlier(players: list[dict], worst: dict | None) -> float:
     kills_mean = sum(r.get('kills', 0) for r in players) / len(players)
     damage_mean = sum(r.get('damage', 0) for r in players) / len(players)
 
-    # The telegram bot requires kills to be below average to consider it a waste of bullets
+    # The bot requires kills to be below average to consider it a waste of bullets
     if worst.get('kills', 0) >= kills_mean:
         return 0.0
 

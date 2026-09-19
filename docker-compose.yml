@@ -13,16 +13,40 @@ services:
       - .:/app
     command: watchmedo auto-restart --directory=./ --pattern="*.py" --recursive -- python -u main.py
 
-  wwebjs-api:
-    image: avoylenko/wwebjs-api:latest
-    container_name: wwebjs-api
-    profiles:
-      - whatsapp
-    ports:
-      - "3000:3000"
+  evolution-postgres:
+    image: postgres:15-alpine
+    container_name: evolution-postgres
     environment:
-      - BASE_WEBHOOK_URL=http://cod-result-processor:5000/webhook
-      - ENABLE_WEBHOOK=TRUE
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=evolution
+      - POSTGRES_DB=evolution
     volumes:
-      - ./.data/wpp_sessions:/usr/src/app/sessions
+      - ./.data/evolution_postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: evolution-api
+    depends_on:
+      - evolution-postgres
+    ports:
+      - "8082:8080"
+    env_file:
+      - .env.development
+    environment:
+      - SERVER_PORT=8080
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution@evolution-postgres:5432/evolution?schema=public
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_db
+      - AUTHENTICATION_TYPE=apikey
+      - RABBITMQ_ENABLED=false
+      - SQS_ENABLED=false
+      - WEBSOCKET_ENABLED=false
+      - WEBHOOK_GLOBAL_ENABLED=false
+      - REDIS_ENABLED=false
+      - CACHE_REDIS_ENABLED=false
+      - CACHE_LOCAL_ENABLED=true
+    volumes:
+      - ./.data/evolution_instances:/evolution/instances
+      - ./.data/evolution_store:/evolution/store
     restart: unless-stopped

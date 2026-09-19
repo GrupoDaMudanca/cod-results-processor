@@ -3,7 +3,7 @@ import time
 import os
 import requests
 import base64
-from config import RESULT_FILES_PATH, WHATSAPP_API_URL, WHATSAPP_SESSION_ID, WHATSAPP_GET_MESSAGE_ENDPOINT, WHATSAPP_DOWNLOAD_MEDIA_ENDPOINT, WHATSAPP_GET_CHAT_ENDPOINT
+from config import RESULT_FILES_PATH, EVOLUTION_API_URL, EVOLUTION_INSTANCE_NAME, EVOLUTION_GET_CHAT_ENDPOINT, EVOLUTION_GET_BASE64_MEDIA_ENDPOINT, EVOLUTION_API_KEY
 from app.command_handler import handle_command
 from app.media_handler import save_media_metadata
 from app.listeners.base import BaseListener
@@ -21,54 +21,68 @@ class WhatsAppListener(BaseListener):
         self._init_bot_identity()
 
     def _init_bot_identity(self):
-        from config import WHATSAPP_API_URL, WHATSAPP_SESSION_ID
+        from config import EVOLUTION_CONNECT_INSTANCE_ENDPOINT
         from app.messengers.whatsapp_client import WhatsAppClient
         
-        # Espera a sessão inicializar antes de bater na API
         client = WhatsAppClient()
         if not client.wait_until_ready():
-            logger.warning("WhatsApp session did not become ready. Cannot fetch bot identity yet.")
+            logger.warning("EvolutionAPI session did not become ready. Cannot fetch bot identity yet.")
             return False
             
         try:
-            url = f"{WHATSAPP_API_URL}/client/getContacts/{WHATSAPP_SESSION_ID}"
-            import requests
-            response = requests.get(url, timeout=10)
+            # Em Evolution v2, usamos fetchInstances para pegar ownerJid
+            url = f"{EVOLUTION_API_URL}/instance/fetchInstances?instanceName={EVOLUTION_INSTANCE_NAME}"
+            headers = {"apikey": EVOLUTION_API_KEY}
+            response = requests.get(url, headers=headers, timeout=10)
             if response.status_code == 200:
-                contacts = response.json().get('contacts', [])
-                for c in contacts:
-                    if c.get('isMe'):
-                        b_id = c.get('id', {}).get('_serialized')
-                        if b_id and b_id not in self.bot_ids:
-                            self.bot_ids.append(b_id)
-                        
-                        lid = c.get('businessProfile', {}).get('id', {}).get('_serialized')
-                        if lid and lid not in self.bot_ids:
-                            self.bot_ids.append(lid)
-                            
-                            
-                logger.info(f"WhatsApp Bot Identity initialized: IDs={self.bot_ids}")
+                data = response.json()
+                owner_jid = None
+                if isinstance(data, list) and len(data) > 0:
+                    owner_jid = data[0].get('ownerJid')
+                elif isinstance(data, dict):
+                    owner_jid = data.get('instance', {}).get('ownerJid') or data.get('ownerJid')
+                    
+                if owner_jid and owner_jid not in self.bot_ids:
+                    self.bot_ids.append(owner_jid)
+                    
+                    # Tentar obter o LID (necessário para menções no Evolution v2 Multi-Device)
+                    from config import WHATSAPP_CHAT_ID, EVOLUTION_GET_CHAT_ENDPOINT
+                    if WHATSAPP_CHAT_ID:
+                        try:
+                            group_url = f"{EVOLUTION_GET_CHAT_ENDPOINT}?groupJid={WHATSAPP_CHAT_ID}"
+                            g_res = requests.get(group_url, headers=headers)
+                            if g_res.status_code == 200:
+                                participants = g_res.json().get('participants', [])
+                                for p in participants:
+                                    if p.get('phoneNumber') == owner_jid:
+                                        lid = p.get('id')
+                                        if lid and lid not in self.bot_ids:
+                                            self.bot_ids.append(lid)
+                        except Exception as e:
+                            logger.error(f"Failed to fetch bot LID from group: {e}")
+
+                logger.info(f"EvolutionAPI Bot Identity initialized: IDs={self.bot_ids}")
                 return True
         except Exception as e:
-            logger.error(f"Error fetching WhatsApp bot identity: {e}")
+            logger.error(f"Error fetching EvolutionAPI bot identity: {e}")
         return False
 
     def _get_chat_administrators(self, chat_id: str) -> list[str]:
-        """Get a list of administrator user IDs for the WhatsApp group."""
         if not chat_id or not chat_id.endswith('@g.us'):
-            return [chat_id] # If it's a private chat, the user is their own admin
+            return [chat_id]
             
         try:
-            response = requests.post(WHATSAPP_GET_CHAT_ENDPOINT, json={"chatId": chat_id})
+            url = f"{EVOLUTION_GET_CHAT_ENDPOINT}?groupJid={chat_id}"
+            headers = {"apikey": EVOLUTION_API_KEY}
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
             chat_data = response.json()
             
             admins = []
-            chat_obj = chat_data.get('chat', {})
-            participants = chat_obj.get('groupMetadata', {}).get('participants', []) if chat_obj.get('isGroup') else []
+            participants = chat_data.get('participants', [])
             for p in participants:
-                if p.get('isAdmin') or p.get('isSuperAdmin'):
-                    admin_id = p.get('id', {}).get('_serialized')
+                if p.get('admin') == 'admin' or p.get('admin') == 'superadmin':
+                    admin_id = p.get('id')
                     if admin_id:
                         admins.append(admin_id)
             return admins
@@ -77,57 +91,44 @@ class WhatsAppListener(BaseListener):
             return []
 
     def _resolve_sender_id(self, from_id: str) -> str:
+        # EvolutionAPI usually returns the correct s.whatsapp.net ID directly
         if not from_id or not from_id.endswith('@lid'):
             return from_id
-            
-        try:
-            from config import WHATSAPP_API_URL, WHATSAPP_SESSION_ID
-            import requests
-            url = f"{WHATSAPP_API_URL}/contact/getClassInfo/{WHATSAPP_SESSION_ID}"
-            contact_resp = requests.post(url, json={"contactId": from_id})
-            if contact_resp.status_code == 200:
-                contact_data = contact_resp.json()
-                if contact_data.get('success'):
-                    real_id = contact_data.get('contact', {}).get('id', {}).get('_serialized')
-                    if real_id:
-                        return real_id
-        except Exception as e:
-            logger.error(f"Failed to resolve .lid contact: {e}")
-            
-        return from_id
+        # Caso chegue algo lid (raro na Evolution API v2 para upserts normais)
+        return from_id.replace('@lid', '@s.whatsapp.net')
 
     def _download_whatsapp_media(self, message):
-        message_id_obj = message.get('id', {})
-        message_id = message_id_obj.get('_serialized') or message_id_obj.get('id')
-        date = message.get('timestamp')
+        message_id = message.get('key', {}).get('id')
+        date = message.get('messageTimestamp')
         
-        has_media = message.get('hasMedia', False)
+        # Evolution v2 indica media com messageType ou chaves dentro de message
+        msg_obj = message.get('message', {})
+        has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
+        
         if not has_media:
             return
             
-        logger.info(f"Downloading WhatsApp media for {message_id}")
+        logger.info(f"Downloading EvolutionAPI media for {message_id}")
         
         try:
-            # For downloading media, the patched API expects the _serialized ID
-            serialized_id = message_id_obj.get('_serialized')
-            chat_id = message.get('from')
-            
-            download_url = f"{WHATSAPP_DOWNLOAD_MEDIA_ENDPOINT}"
+            download_url = f"{EVOLUTION_GET_BASE64_MEDIA_ENDPOINT}"
+            headers = {"apikey": EVOLUTION_API_KEY}
             payload = {
-                "chatId": chat_id,
-                "messageId": serialized_id
+                "message": message
             }
-            media_resp = requests.post(download_url, json=payload)
+            media_resp = requests.post(download_url, json=payload, headers=headers)
             media_resp.raise_for_status()
             media_data = media_resp.json()
             
-            if not media_data.get('success') or 'messageMedia' not in media_data:
-                logger.error("No media data returned.")
+            base64_data = media_data.get('base64')
+            if not base64_data:
+                logger.error("No base64 data returned by EvolutionAPI.")
                 return
                 
-            msg_media = media_data['messageMedia']
-            base64_data = msg_media['data']
-            # Save as .jpg so it's picked up by match_processor
+            # Evolution as vezes retorna "data:image/jpeg;base64,..."
+            if "," in base64_data:
+                base64_data = base64_data.split(',')[1]
+
             file_name = f"wa_{message_id}.jpg"
             
             os.makedirs(RESULT_FILES_PATH, exist_ok=True)
@@ -138,7 +139,7 @@ class WhatsAppListener(BaseListener):
             save_media_metadata(file_name, str(message_id), date)
             
         except Exception as e:
-            logger.error(f"Failed to download WhatsApp media: {e}")
+            logger.error(f"Failed to download EvolutionAPI media: {e}")
             try:
                 from app.messengers import get_messenger
                 from app.messages.system import ERROR_UNEXPECTED_MESSAGES
@@ -163,7 +164,7 @@ class WhatsAppListener(BaseListener):
         while self.whatsapp_queue:
             batch.append(self.whatsapp_queue.pop(0))
             
-        logger.info(f"Processing WhatsApp batch of {len(batch)} messages.")
+        logger.info(f"Processing EvolutionAPI batch of {len(batch)} messages.")
         
         if not self.bot_ids:
             self._init_bot_identity()
@@ -171,55 +172,48 @@ class WhatsAppListener(BaseListener):
         has_photo = False
         processing_msg_sent = False
         for message in batch:
-            text = message.get('body', '')
-            message_id_obj = message.get('id', {})
-            message_id = message_id_obj.get('_serialized') or message_id_obj.get('id')
-            from_id = message.get('author') or message.get('from')
-            chat_id = message.get('from')
+            msg_obj = message.get('message', {})
             
+            text = ""
+            if 'conversation' in msg_obj:
+                text = msg_obj['conversation']
+            elif 'extendedTextMessage' in msg_obj:
+                text = msg_obj['extendedTextMessage'].get('text', '')
+            elif 'imageMessage' in msg_obj:
+                text = msg_obj['imageMessage'].get('caption', '')
 
+            message_id = message.get('key', {}).get('id')
+            chat_id = message.get('key', {}).get('remoteJid')
+            
+            # participant holds the actual sender ID in groups
+            from_id = message.get('key', {}).get('participant') or chat_id
+            
             if text.startswith('/'):
                 admins = self._get_chat_administrators(chat_id)
-                from_id = message.get('author') or message.get('from')
                 from_id = self._resolve_sender_id(from_id)
                 
                 is_admin = from_id in admins
                 handle_command(text, str(message_id), from_id, chat_id, is_admin=is_admin)
                 continue
-                
-            # Dynamic bot_id discovery from incoming message 'to' field
-            msg_to = message.get('to')
-            if msg_to and msg_to.endswith('@c.us') and msg_to not in self.bot_ids:
-                self.bot_ids.append(msg_to)
 
-            is_mentioned = False
-            raw_mentioned_ids = message.get('mentionedIds', [])
-            mentioned_ids = []
-            for m_id in raw_mentioned_ids:
-                if isinstance(m_id, dict):
-                    if '_serialized' in m_id:
-                        mentioned_ids.append(m_id['_serialized'])
-                    elif '$1' in m_id:
-                        mentioned_ids.append(m_id['$1'])
-                    elif 'id' in m_id:
-                        mentioned_ids.append(m_id['id'])
-                elif isinstance(m_id, str):
-                    mentioned_ids.append(m_id)
+            msg_to = chat_id # in groups remoteJid is the group, in private it's the sender
             
-            # Check native mentions
-            if any(b_id in mentioned_ids for b_id in self.bot_ids) or (msg_to in mentioned_ids):
+            is_mentioned = False
+            extended_msg = msg_obj.get('extendedTextMessage', {})
+            mentioned_ids = extended_msg.get('contextInfo', {}).get('mentionedJid', [])
+            if not mentioned_ids:
+                mentioned_ids = message.get('contextInfo', {}).get('mentionedJid', [])
+            
+            if any(b_id in mentioned_ids for b_id in self.bot_ids) or (msg_to in mentioned_ids and msg_to.endswith('@s.whatsapp.net')):
                 is_mentioned = True
                 
-            # Private chats are already fully handled above and skipped, so this will only match explicit mentions in groups.
-                
             if is_mentioned and text.strip():
-                # Clean up mentions to save tokens
                 import re
                 for b_id in self.bot_ids:
                     bot_num = b_id.split('@')[0]
                     text = re.sub(f"(?i)@{bot_num}", "", text).strip()
                 
-                logger.info(f"WhatsApp Bot mentioned! Attempting AI routing for text: {text}")
+                logger.info(f"EvolutionAPI Bot mentioned! Attempting AI routing for text: {text}")
                 
                 if len(text) > 300:
                     from app.messages.ai import AI_TOO_LONG_MESSAGES
@@ -243,48 +237,38 @@ class WhatsAppListener(BaseListener):
                     messenger.send_message(random.choice(AI_INVALID_MAPPING_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_MAPPING_ERROR")
                 elif cmd_or_err:
                     admins = self._get_chat_administrators(chat_id)
-                    from_id = message.get('author') or message.get('from')
                     from_id = self._resolve_sender_id(from_id)
                     is_admin = from_id in admins
                     logger.info(f"AI Routed command: {cmd_or_err}")
                     handle_command(cmd_or_err, str(message_id), from_id, chat_id, is_admin=is_admin)
                 continue
-                
-            if message.get('hasMedia', False) and message.get('type') == 'image':
+
+            has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
+            if has_media:
                 has_photo = True
+                self._download_whatsapp_media(message)
+                self.last_processed_id = message_id
                 
                 if not processing_msg_sent:
                     try:
-                        from app.messengers import get_messenger
-                        from app.messages import PROCESSING_MESSAGES, ERASE_PROCESSING_MESSAGES
-                        from app.state_erase import get_erase
+                        from app.messages.system import PROCESSING_MESSAGES
                         import random
+                        from app.messengers import get_messenger
                         messenger = get_messenger()
-                        
-                        if get_erase():
-                            msg_pool = ERASE_PROCESSING_MESSAGES
-                            msg_type = "ERASE_PROCESSING"
-                        else:
-                            msg_pool = PROCESSING_MESSAGES
-                            msg_type = "PROCESSING"
-                            
                         messenger.send_message(
-                            random.choice(msg_pool),
+                            random.choice(PROCESSING_MESSAGES),
                             reply_to_message_id=str(message_id),
-                            msg_type=msg_type
+                            msg_type="SYSTEM_PROCESSING"
                         )
                         processing_msg_sent = True
                     except Exception as e:
                         logger.error(f"Failed to send processing message: {e}")
-                        
-                self._download_whatsapp_media(message)
-                
+
         if has_photo:
-            logger.info("Finished downloading WhatsApp media from batch.")
+            logger.info("Finished downloading EvolutionAPI media from batch.")
+            return self.last_processed_id
             
-        self.last_processed_id += 1
-        return self.last_processed_id
+        return None
 
     def confirm_updates(self, last_update_id: int):
         pass
-

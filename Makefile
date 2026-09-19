@@ -11,20 +11,12 @@ IMAGE_ARCH ?= linux/amd64
 # If REGISTRY is set, prefix the image name. Otherwise, use just the service name.
 FULL_IMAGE_NAME = $(if $(REGISTRY),$(REGISTRY)/$(SERVICE_NAME):$(IMAGE_TAG),$(SERVICE_NAME):$(IMAGE_TAG))
 
-.PHONY: up-telegram
-up-telegram:
-	@MESSENGER_PROVIDER=telegram docker compose up
-
-.PHONY: up-whatsapp
-up-whatsapp:
+.PHONY: up
+up:
 	@MESSENGER_PROVIDER=whatsapp docker compose --profile whatsapp up
 
-.PHONY: up-telegram-silent
-up-telegram-silent:
-	@MESSENGER_PROVIDER=telegram docker compose up -d
-
-.PHONY: up-whatsapp-silent
-up-whatsapp-silent:
+.PHONY: up-silent
+up-silent:
 	@MESSENGER_PROVIDER=whatsapp docker compose --profile whatsapp up -d
 
 .PHONY: down

@@ -17,24 +17,31 @@ class WhatsAppWebhookServer:
         if not data:
             return jsonify({"status": "ignored"}), 200
 
-        event_type = data.get('dataType')
-        message_data = data.get('data', {})
+        event_type = data.get('event')
+        
+        if event_type == 'messages.upsert':
+            messages = data.get('data', {})
+            # Em v2, a Evolution muitas vezes manda como dict simples ou lista
+            if not isinstance(messages, list):
+                messages = [messages]
+                
+            for message in messages:
+                if message.get('fromMe', False) or message.get('key', {}).get('fromMe', False):
+                    continue
+                    
+                chat_id = message.get('remoteJid') or message.get('key', {}).get('remoteJid')
+                if not chat_id:
+                    continue
+                    
+                is_private = not chat_id.endswith('@g.us')
+                
+                if WHATSAPP_CHAT_ID and not is_private:
+                    if chat_id != WHATSAPP_CHAT_ID:
+                        continue
 
-        if event_type == 'message':
-            message = message_data.get('message', message_data)
-
-            if message.get('fromMe', False):
-                return jsonify({"status": "ignored"}), 200
-
-            chat_id = message.get('from')
-            is_private = chat_id and not chat_id.endswith('@g.us')
-            
-            if WHATSAPP_CHAT_ID and not is_private:
-                if message.get('from') != WHATSAPP_CHAT_ID and message.get('to') != WHATSAPP_CHAT_ID:
-                    return jsonify({"status": "ignored"}), 200
-
-            self.queue.append(message)
-            logger.info(f"Received WhatsApp message added to queue: {message.get('id', {}).get('id')}")
+                self.queue.append(message)
+                msg_id = message.get('key', {}).get('id') or message.get('messageId')
+                logger.info(f"Received Evolution message added to queue: {msg_id}")
 
         return jsonify({"status": "ok"}), 200
 

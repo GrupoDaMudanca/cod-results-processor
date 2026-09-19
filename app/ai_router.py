@@ -12,7 +12,7 @@ MODELS = [
     "openai/gpt-oss-20b"
 ]
 
-SYSTEM_PROMPT_TEMPLATE = """You are the internal command router for a Call of Duty statistics bot on Telegram and WhatsApp.
+SYSTEM_PROMPT_TEMPLATE = """You are the internal command router for a Call of Duty statistics bot on WhatsApp.
 The user spoke to the bot in natural language. Your goal is to map the user's intent to a valid command. Current date: {current_date}
 
 SUPPORTED COMMANDS:

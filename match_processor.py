@@ -203,14 +203,14 @@ def process_files(root_path: str) -> List[Match]:
         metadata = read_image_metadata(image_path)
         message_id = metadata.get('message_id')
 
-        # Parse date from Telegram timestamp or use current date
+        # Parse date from media timestamp or use current date
         backfill_data = metadata.get('backfill')
         if backfill_data:
             date_str = f"01/{backfill_data['month']}/{backfill_data['year']}"
         else:
-            telegram_date = metadata.get('date')
-            if telegram_date:
-                date_str = datetime.fromtimestamp(telegram_date).strftime('%d/%m/%Y')
+            media_date = metadata.get('date')
+            if media_date:
+                date_str = datetime.fromtimestamp(media_date).strftime('%d/%m/%Y')
             else:
                 date_str = datetime.now().strftime('%d/%m/%Y')
 
