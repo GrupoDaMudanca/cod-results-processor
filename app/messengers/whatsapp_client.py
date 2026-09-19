@@ -20,6 +20,15 @@ class WhatsAppClient(MessengerClient):
             "text": text
         }
         
+        if reply_to_message_id:
+            payload["options"] = {
+                "quoted": {
+                    "key": {
+                        "id": reply_to_message_id
+                    }
+                }
+            }
+        
         headers = {
             "apikey": EVOLUTION_API_KEY
         }
@@ -55,6 +64,15 @@ class WhatsAppClient(MessengerClient):
                 "caption": caption or "",
                 "media": encoded_string
             }
+            
+            if reply_to_message_id:
+                payload["options"] = {
+                    "quoted": {
+                        "key": {
+                            "id": reply_to_message_id
+                        }
+                    }
+                }
             
             headers = {
                 "apikey": EVOLUTION_API_KEY
