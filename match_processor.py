@@ -81,7 +81,7 @@ def read_image_metadata(image_path: str) -> dict:
     return {}
 
 
-def process_file(image_path: str, date: str = None, message_id: str = None) -> Match:
+def process_file(image_path: str, date: str = None, reply_to: dict = None) -> Match:
     logger.info(f'Processing {image_path}')
 
     uploaded_file = client.files.upload(file=image_path)
@@ -144,7 +144,7 @@ def process_file(image_path: str, date: str = None, message_id: str = None) -> M
                 
                 logger.warning(f"Attempt {attempt}/{max_retries} on model '{model}' failed for image {image_path}: {e}. Retrying in {wait_time}s...")
                 
-                if message_id:
+                if reply_to:
                     messenger = get_messenger()
                     from app.messages.system import FIRST_RETRY_MESSAGES, SUBSEQUENT_RETRY_MESSAGES
                     if overall_attempt == 1:
@@ -154,7 +154,7 @@ def process_file(image_path: str, date: str = None, message_id: str = None) -> M
                     
                     messenger.send_message(
                         msg,
-                        reply_to_message_id=message_id,
+                        reply_to_message=reply_to,
                         msg_type="RETRY_BACKOFF"
                     )
                 
@@ -199,9 +199,16 @@ def process_files(root_path: str) -> List[Match]:
     matches = []
 
     for image_path in image_paths:
-        # Read metadata (message_id, date) from companion JSON
+        # Read metadata (message_id, date, remoteJid, participant) from companion JSON
         metadata = read_image_metadata(image_path)
         message_id = metadata.get('message_id')
+        reply_to = None
+        if message_id:
+            reply_to = {
+                'id': message_id,
+                'remoteJid': metadata.get('remoteJid'),
+                'participant': metadata.get('participant')
+            }
 
         # Parse date from media timestamp or use current date
         backfill_data = metadata.get('backfill')
@@ -216,12 +223,12 @@ def process_files(root_path: str) -> List[Match]:
 
         # Process the image with Gemini
         try:
-            match = process_file(image_path, date=date_str, message_id=message_id)
+            match = process_file(image_path, date=date_str, reply_to=reply_to)
             if not match:
-                if message_id:
+                if reply_to:
                     messenger.send_message(
                         random.choice(INVALID_IMAGE_MESSAGES),
-                        reply_to_message_id=message_id,
+                        reply_to_message=reply_to,
                         msg_type="INVALID_IMAGE"
                     )
                 from app.state_ignore import clear_ignore_player
@@ -240,27 +247,30 @@ def process_files(root_path: str) -> List[Match]:
             
             if '429' in err_str or 'ResourceExhausted' in err_str or 'quota' in err_str.lower():
                 logger.warning('Gemini API quota exhausted!')
-                messenger.send_message(
-                    random.choice(ERROR_QUOTA_MESSAGES),
-                    reply_to_message_id=message_id,
-                    msg_type="ERROR_QUOTA"
-                )
+                if reply_to:
+                    messenger.send_message(
+                        random.choice(ERROR_QUOTA_MESSAGES),
+                        reply_to_message=reply_to,
+                        msg_type="ERROR_QUOTA"
+                    )
                 break
             elif 'API key not valid' in err_str or 'API_KEY_INVALID' in err_str or '401' in err_str or 'UNAUTHENTICATED' in err_str:
                 logger.error('Gemini API key is invalid or missing.')
-                messenger.send_message(
-                    random.choice(ERROR_API_KEY_MESSAGES),
-                    reply_to_message_id=message_id,
-                    msg_type="ERROR_API_KEY"
-                )
+                if reply_to:
+                    messenger.send_message(
+                        random.choice(ERROR_API_KEY_MESSAGES),
+                        reply_to_message=reply_to,
+                        msg_type="ERROR_API_KEY"
+                    )
                 break
             else:
                 logger.error(f'Unexpected error processing image {image_path}')
-                messenger.send_message(
-                    random.choice(ERROR_UNEXPECTED_MESSAGES),
-                    reply_to_message_id=message_id,
-                    msg_type="ERROR_UNEXPECTED"
-                )
+                if reply_to:
+                    messenger.send_message(
+                        random.choice(ERROR_UNEXPECTED_MESSAGES),
+                        reply_to_message=reply_to,
+                        msg_type="ERROR_UNEXPECTED"
+                    )
                 continue
 
         from app.state_erase import get_erase, clear_erase
@@ -270,27 +280,27 @@ def process_files(root_path: str) -> List[Match]:
         if get_erase():
             deleted_count = delete_match(match.id)
             if deleted_count > 0:
-                if message_id:
+                if reply_to:
                     msg_text = random.choice(ERASE_DELETED_MESSAGES).format(count=deleted_count)
                     messenger.send_message(
                         msg_text,
-                        reply_to_message_id=message_id,
+                        reply_to_message=reply_to,
                         msg_type="ERASE_DELETED"
                     )
                 clear_erase()
             else:
-                if message_id:
+                if reply_to:
                     messenger.send_message(
                         random.choice(ERASE_NOT_FOUND_MESSAGES),
-                        reply_to_message_id=message_id,
+                        reply_to_message=reply_to,
                         msg_type="ERASE_NOT_FOUND"
                     )
                 clear_erase()
                 
-            if message_id:
+            if reply_to:
                 messenger.send_message(
                     random.choice(ERASE_INACTIVE_MESSAGES),
-                    reply_to_message_id=message_id,
+                    reply_to_message=reply_to,
                     msg_type="ERASE_INACTIVE"
                 )
             continue
@@ -307,26 +317,26 @@ def process_files(root_path: str) -> List[Match]:
                 
                 if any(record.player.name == ignore_player for record in match.records):
                     success = ignore_match_player(match.id, ignore_player)
-                    if success and message_id:
+                    if success and reply_to:
                         messenger.send_message(
                             random.choice(IGNORE_RETROACTIVE_APPLIED_MESSAGES).format(player_name=ignore_player),
-                            reply_to_message_id=message_id,
+                            reply_to_message=reply_to,
                             msg_type="IGNORE_RETROACTIVE_APPLIED"
                         )
                 else:
-                    if message_id:
+                    if reply_to:
                         messenger.send_message(
                             random.choice(IGNORE_MISSING_PLAYER_MESSAGES).format(player_name=ignore_player),
-                            reply_to_message_id=message_id,
+                            reply_to_message=reply_to,
                             msg_type="IGNORE_MISSING_PLAYER"
                         )
                 clear_ignore_player()
                 continue
                 
-            if message_id:
+            if reply_to:
                 messenger.send_message(
                     random.choice(DUPLICATE_MESSAGES),
-                    reply_to_message_id=message_id,
+                    reply_to_message=reply_to,
                     msg_type="DUPLICATE"
                 )
             continue
@@ -342,18 +352,18 @@ def process_files(root_path: str) -> List[Match]:
             
             if player_found:
                 from app.messages.ignore import IGNORE_APPLIED_MESSAGES
-                if message_id:
+                if reply_to:
                     messenger.send_message(
                         random.choice(IGNORE_APPLIED_MESSAGES).format(player_name=ignore_player),
-                        reply_to_message_id=message_id,
+                        reply_to_message=reply_to,
                         msg_type="IGNORE_APPLIED"
                     )
             else:
                 from app.messages.ignore import IGNORE_MISSING_PLAYER_MESSAGES
-                if message_id:
+                if reply_to:
                     messenger.send_message(
                         random.choice(IGNORE_MISSING_PLAYER_MESSAGES).format(player_name=ignore_player),
-                        reply_to_message_id=message_id,
+                        reply_to_message=reply_to,
                         msg_type="IGNORE_MISSING_PLAYER"
                     )
             clear_ignore_player()
@@ -375,7 +385,7 @@ def process_files(root_path: str) -> List[Match]:
         if metric_message:
             logger.info(f'Metric reply: {metric_message} (score: {best_metric.score})')
 
-        matches.append((match, message_id, metric_message))
+        matches.append((match, reply_to, metric_message))
 
     return matches
 
@@ -384,7 +394,7 @@ def process_all():
     results = process_files(RESULT_FILES_PATH)
     
     matches = [r[0] for r in results]
-    last_message_id = results[-1][1] if results else None
+    last_reply_to = results[-1][1] if results else None
     
     # Get the highest scored metric message across all processed images in this batch
     best_message = None
@@ -397,7 +407,7 @@ def process_all():
 
     if matches:
         write_matches(matches)
-        return True, last_message_id, best_message
+        return True, last_reply_to, best_message
     else:
         logger.info('There were no new matches to process')
         return False, None, None

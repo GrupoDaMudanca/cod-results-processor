@@ -9,7 +9,7 @@ from app.messengers.base import MessengerClient
 from config import EVOLUTION_SEND_TEXT_ENDPOINT, EVOLUTION_SEND_MEDIA_ENDPOINT, EVOLUTION_API_KEY, WHATSAPP_CHAT_ID
 
 class WhatsAppClient(MessengerClient):
-    def send_message(self, text: str, reply_to_message_id: str = None, msg_type: str = "UNKNOWN", chat_id: str = None):
+    def send_message(self, text: str, reply_to_message: dict = None, msg_type: str = "UNKNOWN", chat_id: str = None):
         target_chat = chat_id or WHATSAPP_CHAT_ID
         if not target_chat:
             logger.error("WHATSAPP_CHAT_ID is not configured in environment variables.")
@@ -20,15 +20,18 @@ class WhatsAppClient(MessengerClient):
             "text": text
         }
         
-        if reply_to_message_id:
-            payload["options"] = {
-                "quoted": {
-                    "key": {
-                        "remoteJid": target_chat,
-                        "fromMe": False,
-                        "id": reply_to_message_id
-                    }
-                }
+        if reply_to_message and isinstance(reply_to_message, dict):
+            quoted_key = {
+                "id": reply_to_message.get("id"),
+                "remoteJid": reply_to_message.get("remoteJid", target_chat),
+                "fromMe": False,
+            }
+            if reply_to_message.get("participant"):
+                quoted_key["participant"] = reply_to_message.get("participant")
+                
+            payload["quoted"] = {
+                "key": quoted_key,
+                "message": {"conversation": "Quoted message"}
             }
         
         headers = {
@@ -47,7 +50,7 @@ class WhatsAppClient(MessengerClient):
                 logger.error(f"Failed to send Evolution message: {e}")
             return None
 
-    def send_photo(self, photo_path: str, caption: str = None, reply_to_message_id: str = None, msg_type: str = "UNKNOWN", chat_id: str = None):
+    def send_photo(self, photo_path: str, caption: str = None, reply_to_message: dict = None, msg_type: str = "UNKNOWN", chat_id: str = None):
         target_chat = chat_id or WHATSAPP_CHAT_ID
         if not target_chat:
             logger.error("WHATSAPP_CHAT_ID is not configured in environment variables.")
@@ -67,15 +70,18 @@ class WhatsAppClient(MessengerClient):
                 "media": encoded_string
             }
             
-            if reply_to_message_id:
-                payload["options"] = {
-                    "quoted": {
-                        "key": {
-                            "remoteJid": target_chat,
-                            "fromMe": False,
-                            "id": reply_to_message_id
-                        }
-                    }
+            if reply_to_message and isinstance(reply_to_message, dict):
+                quoted_key = {
+                    "id": reply_to_message.get("id"),
+                    "remoteJid": reply_to_message.get("remoteJid", target_chat),
+                    "fromMe": False,
+                }
+                if reply_to_message.get("participant"):
+                    quoted_key["participant"] = reply_to_message.get("participant")
+                    
+                payload["quoted"] = {
+                    "key": quoted_key,
+                    "message": {"conversation": "Quoted message"}
                 }
             
             headers = {

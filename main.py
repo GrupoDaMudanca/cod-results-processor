@@ -43,7 +43,7 @@ def run_daemon():
     # Initialize listener early so WhatsApp Webhook server starts immediately
     listener = get_listener()
     
-    # Certificar de que as pastas existam ao iniciar
+    # Ensure folders exist on startup
     for folder in [RESULT_FILES_PATH, TEMP_OUTPUT_FILES_PATH]:
         full_path = os.path.join(os.getcwd(), folder)
         os.makedirs(full_path, exist_ok=True)
@@ -63,7 +63,7 @@ def run_daemon():
                 logger.info("Confirming processed messages...")
                 listener.confirm_updates(last_update)
                 # Process the downloaded files
-                processed_any, msg_id, funny_msg = process_all()
+                processed_any, reply_to, funny_msg = process_all()
                 
                 if processed_any:
                     logger.info("Processing complete. Consolidating data...")
@@ -90,7 +90,7 @@ def run_daemon():
                             
                         from app.messengers import get_messenger
                         messenger = get_messenger()
-                        messenger.send_photo(dashboard_path, caption=caption, reply_to_message_id=msg_id, msg_type=msg_type)
+                        messenger.send_photo(dashboard_path, caption=caption, reply_to_message=reply_to, msg_type=msg_type)
                     
                 # Clean up local temp files
                 cleanup()

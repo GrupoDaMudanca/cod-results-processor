@@ -3,7 +3,7 @@ import os
 from config import RESULT_FILES_PATH
 from app.backfill import get_backfill
 
-def save_media_metadata(file_name: str, message_id: str, date: int):
+def save_media_metadata(file_name: str, message_id: str, date: int, remote_jid: str = None, participant: str = None):
     """Save metadata alongside the media file for later processing."""
     os.makedirs(RESULT_FILES_PATH, exist_ok=True)
     
@@ -11,6 +11,8 @@ def save_media_metadata(file_name: str, message_id: str, date: int):
     metadata = {
         'message_id': message_id,
         'date': date,
+        'remoteJid': remote_jid,
+        'participant': participant,
     }
     
     backfill_data = get_backfill()

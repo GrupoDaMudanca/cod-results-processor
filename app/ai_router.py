@@ -19,7 +19,7 @@ SUPPORTED COMMANDS:
 - `/citation` -> requests a completely RANDOM citation/quote. ONLY map to this if the user EXPLICITLY asks to read a random quote, WITHOUT specifying any topics, names, or keywords.
 - `/searchcitation <keywords>` -> searches for a citation matching specific words. If the user asks for a citation about a specific topic, person, or context (e.g., "me vê uma pérola do Rayol", "citação sobre submarino"), extract the key nouns/names as space-separated keywords and map to this. Do NOT use this if they provide the exact format to SAVE a new quote.
 - `/citation "quote text" - SOBRENOME, Nome` -> SAVES a new citation. ONLY map to this if the user EXPLICITLY asks the bot to save/annotate a quote AND the author is provided in the exact `SOBRENOME, Nome` format (e.g., `FROTA, Pedro`). Do NOT attempt to fix, infer, or hallucinate the author's name to fit the format. If the EXACT format (a word, a comma, a space, and another word) is NOT present in the user's message, you MUST map to null.
-- `/dashboard` -> requests the statistics dashboard. (Can receive dates as arguments: `/dashboard YYYY/MM` or `/dashboard YYYY` or a range `/dashboard YYYY/MM YYYY/MM`). If the user asks for "up to today" or similar, the second argument should be the current month/year.
+- `/dashboard` -> requests the statistics dashboard. (Can receive exact dates or months: `/dashboard DD/MM/YYYY`, `/dashboard MM/YYYY`, `/dashboard YYYY`, or a range like `/dashboard DD/MM/YYYY MM/YYYY`). If the user asks for "up to today" or similar, the second argument should be the current day/month/year. If they ask for a specific day to the beginning of a month, output the exact dates (e.g. `15/10/2026 01/11/2026`).
 - `/backfill YYYY/MM` -> starts backfilling old data for a specific month. (Must have a specific month. If the user only specifies a year or is vague, map to `null`). If they say "fevereiro", assume the current year.
 - `/backfill end` -> stops the current backfill.
 - `/reload` -> reloads the player names database. Use this when a user says a player joined, someone changed their nick, or asks to update/reload the clan names.
@@ -59,6 +59,9 @@ Output: {"command_text": "/searchcitation rayol submarino"}
 
 User: "@bot me mostre as estatísticas"
 Output: {"command_text": "/dashboard"}
+
+User: "bot, me vê o dashboard do dia 15 de outubro até o início de novembro"
+Output: {"command_text": "/dashboard 15/10/2026 01/11/2026"}
 
 User: "faz um café pra mim"
 Output: {"command_text": null}

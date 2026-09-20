@@ -35,10 +35,11 @@ def load_data(start_date=None, end_date=None):
     
     if 'date' in df.columns:
         df['parsed_date'] = pd.to_datetime(df['date'], format='%d/%m/%Y', errors='coerce')
-        start_period = pd.to_datetime(start_date).tz_localize(None).to_period('M')
-        end_period = pd.to_datetime(end_date).tz_localize(None).to_period('M')
-        df = df[(df['parsed_date'].dt.tz_localize(None).dt.to_period('M') >= start_period) & 
-                (df['parsed_date'].dt.tz_localize(None).dt.to_period('M') <= end_period)]
+        # We now filter by exact datetime boundaries, inclusive
+        start_bound = pd.to_datetime(start_date).tz_localize(None)
+        end_bound = pd.to_datetime(end_date).tz_localize(None)
+        df = df[(df['parsed_date'].dt.tz_localize(None) >= start_bound) & 
+                (df['parsed_date'].dt.tz_localize(None) <= end_bound)]
                 
     if 'ignore_stats' in df.columns:
         df = df[df['ignore_stats'] != True]
@@ -317,12 +318,28 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
         9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
     }
     
-    if start_date.year == end_date.year and start_date.month == end_date.month:
-        title_text = f"{PT_MONTHS[start_date.month]} / {start_date.year}"
-    elif start_date.year == end_date.year and start_date.month == 1 and end_date.month == 12:
+    import calendar
+    s_full_month = start_date.day == 1
+    e_full_month = end_date.day == calendar.monthrange(end_date.year, end_date.month)[1]
+    
+    def format_date_str(d, is_start):
+        if is_start and d.day == 1:
+            return f"{PT_MONTHS[d.month][:3]}/{d.year}"
+        if not is_start and d.day == calendar.monthrange(d.year, d.month)[1]:
+            return f"{PT_MONTHS[d.month][:3]}/{d.year}"
+        return f"{d.day:02d}/{d.month:02d}/{d.year}"
+
+    if start_date.year == end_date.year and start_date.month == 1 and end_date.month == 12 and s_full_month and e_full_month:
         title_text = f"Ano de {start_date.year}"
+    elif start_date.year == end_date.year and start_date.month == end_date.month:
+        if s_full_month and e_full_month:
+            title_text = f"{PT_MONTHS[start_date.month]} / {start_date.year}"
+        elif start_date.day == end_date.day:
+            title_text = f"{start_date.day:02d} de {PT_MONTHS[start_date.month]} / {start_date.year}"
+        else:
+            title_text = f"{format_date_str(start_date, True)} a {format_date_str(end_date, False)}"
     else:
-        title_text = f"{PT_MONTHS[start_date.month]}/{start_date.year} a {PT_MONTHS[end_date.month]}/{end_date.year}"
+        title_text = f"{format_date_str(start_date, True)} a {format_date_str(end_date, False)}"
     
     plt.text(0.5, y_pct(0.3), "Destaques de Ressurgência", color="white", fontsize=28, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
     plt.text(0.5, y_pct(0.8), title_text, color="#a0a0b0", fontsize=18, ha='center', va='center', transform=ax.transAxes)

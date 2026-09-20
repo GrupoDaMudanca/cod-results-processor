@@ -21,7 +21,7 @@ class WhatsAppWebhookServer:
         
         if event_type == 'messages.upsert':
             messages = data.get('data', {})
-            # Em v2, a Evolution muitas vezes manda como dict simples ou lista
+            # In v2, Evolution often sends as a simple dict or list
             if not isinstance(messages, list):
                 messages = [messages]
                 

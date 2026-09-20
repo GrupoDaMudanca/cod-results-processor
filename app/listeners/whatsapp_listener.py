@@ -30,7 +30,7 @@ class WhatsAppListener(BaseListener):
             return False
             
         try:
-            # Em Evolution v2, usamos fetchInstances para pegar ownerJid
+            # In Evolution v2, we use fetchInstances to get ownerJid
             url = f"{EVOLUTION_API_URL}/instance/fetchInstances?instanceName={EVOLUTION_INSTANCE_NAME}"
             headers = {"apikey": EVOLUTION_API_KEY}
             response = requests.get(url, headers=headers, timeout=10)
@@ -45,7 +45,7 @@ class WhatsAppListener(BaseListener):
                 if owner_jid and owner_jid not in self.bot_ids:
                     self.bot_ids.append(owner_jid)
                     
-                    # Tentar obter o LID (necessário para menções no Evolution v2 Multi-Device)
+                    # Try to get the LID (necessary for mentions in Evolution v2 Multi-Device)
                     from config import WHATSAPP_CHAT_ID, EVOLUTION_GET_CHAT_ENDPOINT
                     if WHATSAPP_CHAT_ID:
                         try:
@@ -94,14 +94,14 @@ class WhatsAppListener(BaseListener):
         # EvolutionAPI usually returns the correct s.whatsapp.net ID directly
         if not from_id or not from_id.endswith('@lid'):
             return from_id
-        # Caso chegue algo lid (raro na Evolution API v2 para upserts normais)
+        # In case a lid arrives (rare in Evolution API v2 for normal upserts)
         return from_id.replace('@lid', '@s.whatsapp.net')
 
     def _download_whatsapp_media(self, message):
         message_id = message.get('key', {}).get('id')
         date = message.get('messageTimestamp')
         
-        # Evolution v2 indica media com messageType ou chaves dentro de message
+        # Evolution v2 indicates media with messageType or keys inside message
         msg_obj = message.get('message', {})
         has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
         
@@ -125,7 +125,7 @@ class WhatsAppListener(BaseListener):
                 logger.error("No base64 data returned by EvolutionAPI.")
                 return
                 
-            # Evolution as vezes retorna "data:image/jpeg;base64,..."
+            # Evolution sometimes returns "data:image/jpeg;base64,..."
             if "," in base64_data:
                 base64_data = base64_data.split(',')[1]
 
@@ -136,7 +136,9 @@ class WhatsAppListener(BaseListener):
             with open(file_path, "wb") as file:
                 file.write(base64.b64decode(base64_data))
                 
-            save_media_metadata(file_name, str(message_id), date)
+            remote_jid = message.get('key', {}).get('remoteJid')
+            participant = message.get('key', {}).get('participant')
+            save_media_metadata(file_name, str(message_id), date, remote_jid, participant)
             
         except Exception as e:
             logger.error(f"Failed to download EvolutionAPI media: {e}")
@@ -188,12 +190,18 @@ class WhatsAppListener(BaseListener):
             # participant holds the actual sender ID in groups
             from_id = message.get('key', {}).get('participant') or chat_id
             
+            reply_to = {
+                'id': message_id,
+                'remoteJid': chat_id,
+                'participant': message.get('key', {}).get('participant')
+            }
+            
             if text.startswith('/'):
                 admins = self._get_chat_administrators(chat_id)
                 from_id = self._resolve_sender_id(from_id)
                 
                 is_admin = from_id in admins
-                handle_command(text, str(message_id), from_id, chat_id, is_admin=is_admin)
+                handle_command(text, reply_to, from_id, chat_id, is_admin=is_admin)
                 continue
 
             msg_to = chat_id # in groups remoteJid is the group, in private it's the sender
@@ -220,7 +228,7 @@ class WhatsAppListener(BaseListener):
                     import random
                     from app.messengers import get_messenger
                     messenger = get_messenger()
-                    messenger.send_message(random.choice(AI_TOO_LONG_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_TOO_LONG")
+                    messenger.send_message(random.choice(AI_TOO_LONG_MESSAGES), reply_to_message=reply_to, msg_type="AI_TOO_LONG")
                     continue
                     
                 from app.ai_router import route_message_to_command
@@ -232,15 +240,15 @@ class WhatsAppListener(BaseListener):
                 messenger = get_messenger()
                 
                 if cmd_or_err == "ERROR_API":
-                    messenger.send_message(random.choice(AI_ERROR_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_ERROR")
+                    messenger.send_message(random.choice(AI_ERROR_MESSAGES), reply_to_message=reply_to, msg_type="AI_ERROR")
                 elif cmd_or_err == "ERROR_MAPPING":
-                    messenger.send_message(random.choice(AI_INVALID_MAPPING_MESSAGES), reply_to_message_id=str(message_id), msg_type="AI_MAPPING_ERROR")
+                    messenger.send_message(random.choice(AI_INVALID_MAPPING_MESSAGES), reply_to_message=reply_to, msg_type="AI_MAPPING_ERROR")
                 elif cmd_or_err:
                     admins = self._get_chat_administrators(chat_id)
                     from_id = self._resolve_sender_id(from_id)
                     is_admin = from_id in admins
                     logger.info(f"AI Routed command: {cmd_or_err}")
-                    handle_command(cmd_or_err, str(message_id), from_id, chat_id, is_admin=is_admin)
+                    handle_command(cmd_or_err, reply_to, from_id, chat_id, is_admin=is_admin)
                 continue
 
             has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
@@ -257,7 +265,7 @@ class WhatsAppListener(BaseListener):
                         messenger = get_messenger()
                         messenger.send_message(
                             random.choice(PROCESSING_MESSAGES),
-                            reply_to_message_id=str(message_id),
+                            reply_to_message=reply_to,
                             msg_type="SYSTEM_PROCESSING"
                         )
                         processing_msg_sent = True
