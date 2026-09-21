@@ -98,7 +98,7 @@ class WhatsAppListener(BaseListener):
         return from_id.replace('@lid', '@s.whatsapp.net')
 
     def _download_whatsapp_media(self, message):
-        message_id = message.get('key', {}).get('id')
+        message_id = (message.get('key') or {}).get('id')
         date = message.get('messageTimestamp')
         
         # Evolution v2 indicates media with messageType or keys inside message
@@ -136,8 +136,8 @@ class WhatsAppListener(BaseListener):
             with open(file_path, "wb") as file:
                 file.write(base64.b64decode(base64_data))
                 
-            remote_jid = message.get('key', {}).get('remoteJid')
-            participant = message.get('key', {}).get('participant')
+            remote_jid = (message.get('key') or {}).get('remoteJid')
+            participant = (message.get('key') or {}).get('participant')
             save_media_metadata(file_name, str(message_id), date, remote_jid, participant)
             
         except Exception as e:
@@ -174,26 +174,26 @@ class WhatsAppListener(BaseListener):
         has_photo = False
         processing_msg_sent = False
         for message in batch:
-            msg_obj = message.get('message', {})
+            msg_obj = message.get('message') or {}
             
             text = ""
             if 'conversation' in msg_obj:
                 text = msg_obj['conversation']
-            elif 'extendedTextMessage' in msg_obj:
+            elif 'extendedTextMessage' in msg_obj and msg_obj['extendedTextMessage']:
                 text = msg_obj['extendedTextMessage'].get('text', '')
-            elif 'imageMessage' in msg_obj:
+            elif 'imageMessage' in msg_obj and msg_obj['imageMessage']:
                 text = msg_obj['imageMessage'].get('caption', '')
 
-            message_id = message.get('key', {}).get('id')
-            chat_id = message.get('key', {}).get('remoteJid')
+            message_id = (message.get('key') or {}).get('id')
+            chat_id = (message.get('key') or {}).get('remoteJid')
             
             # participant holds the actual sender ID in groups
-            from_id = message.get('key', {}).get('participant') or chat_id
+            from_id = (message.get('key') or {}).get('participant') or chat_id
             
             reply_to = {
                 'id': message_id,
                 'remoteJid': chat_id,
-                'participant': message.get('key', {}).get('participant')
+                'participant': (message.get('key') or {}).get('participant')
             }
             
             if text.startswith('/'):
@@ -207,10 +207,10 @@ class WhatsAppListener(BaseListener):
             msg_to = chat_id # in groups remoteJid is the group, in private it's the sender
             
             is_mentioned = False
-            extended_msg = msg_obj.get('extendedTextMessage', {})
-            mentioned_ids = extended_msg.get('contextInfo', {}).get('mentionedJid', [])
+            extended_msg = msg_obj.get('extendedTextMessage') or {}
+            mentioned_ids = (extended_msg.get('contextInfo') or {}).get('mentionedJid', [])
             if not mentioned_ids:
-                mentioned_ids = message.get('contextInfo', {}).get('mentionedJid', [])
+                mentioned_ids = (message.get('contextInfo') or {}).get('mentionedJid', [])
             
             if any(b_id in mentioned_ids for b_id in self.bot_ids) or (msg_to in mentioned_ids and msg_to.endswith('@s.whatsapp.net')):
                 is_mentioned = True

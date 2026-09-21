@@ -26,10 +26,12 @@ class WhatsAppWebhookServer:
                 messages = [messages]
                 
             for message in messages:
-                if message.get('fromMe', False) or message.get('key', {}).get('fromMe', False):
+                if not message:
+                    continue
+                if message.get('fromMe', False) or (message.get('key') or {}).get('fromMe', False):
                     continue
                     
-                chat_id = message.get('remoteJid') or message.get('key', {}).get('remoteJid')
+                chat_id = message.get('remoteJid') or (message.get('key') or {}).get('remoteJid')
                 if not chat_id:
                     continue
                     
