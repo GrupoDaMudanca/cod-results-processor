@@ -174,9 +174,12 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
                 return
                 
             now_dt = datetime.now()
-            if start_date.date() > now_dt.date() or end_date.date() > now_dt.date():
+            if start_date.date() > now_dt.date():
                 messenger.send_message(random.choice(DASHBOARD_FUTURE_MONTH_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_FUTURE_MONTH")
                 return
+                
+            if end_date > now_dt:
+                end_date = now_dt
             
             messenger.send_message(random.choice(DASHBOARD_START_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_START")
             dashboard_path = generate_dashboard_image(start_date=start_date, end_date=end_date)
