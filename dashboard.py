@@ -30,8 +30,9 @@ def load_data(start_date=None, end_date=None):
     
     if not start_date or not end_date:
         now = datetime.now()
+        import calendar
         start_date = datetime(now.year, now.month, 1)
-        end_date = start_date
+        end_date = datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59)
     
     if 'date' in df.columns:
         df['parsed_date'] = pd.to_datetime(df['date'], format='%d/%m/%Y', errors='coerce')
@@ -239,8 +240,9 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
         
     if not start_date or not end_date:
         now = datetime.now()
+        import calendar
         start_date = datetime(now.year, now.month, 1)
-        end_date = start_date
+        end_date = datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59)
 
     res = get_highlights_for_period(start_date, end_date)
     if not res:
