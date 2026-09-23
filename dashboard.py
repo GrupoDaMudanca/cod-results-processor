@@ -324,24 +324,10 @@ def generate_dashboard_image(output_path=None, start_date=None, end_date=None):
     s_full_month = start_date.day == 1
     e_full_month = end_date.day == calendar.monthrange(end_date.year, end_date.month)[1]
     
-    def format_date_str(d, is_start):
-        if is_start and d.day == 1:
-            return f"{PT_MONTHS[d.month][:3]}/{d.year}"
-        if not is_start and d.day == calendar.monthrange(d.year, d.month)[1]:
-            return f"{PT_MONTHS[d.month][:3]}/{d.year}"
-        return f"{d.day:02d}/{d.month:02d}/{d.year}"
-
-    if start_date.year == end_date.year and start_date.month == 1 and end_date.month == 12 and s_full_month and e_full_month:
-        title_text = f"Ano de {start_date.year}"
-    elif start_date.year == end_date.year and start_date.month == end_date.month:
-        if s_full_month and e_full_month:
-            title_text = f"{PT_MONTHS[start_date.month]} / {start_date.year}"
-        elif start_date.day == end_date.day:
-            title_text = f"{start_date.day:02d} de {PT_MONTHS[start_date.month]} / {start_date.year}"
-        else:
-            title_text = f"{format_date_str(start_date, True)} a {format_date_str(end_date, False)}"
+    if start_date.date() == end_date.date():
+        title_text = f"{start_date.day:02d}/{start_date.month:02d}/{start_date.year}"
     else:
-        title_text = f"{format_date_str(start_date, True)} a {format_date_str(end_date, False)}"
+        title_text = f"{start_date.day:02d}/{start_date.month:02d}/{start_date.year} a {end_date.day:02d}/{end_date.month:02d}/{end_date.year}"
     
     plt.text(0.5, y_pct(0.3), "Destaques de Ressurgência", color="white", fontsize=28, fontweight='bold', ha='center', va='center', transform=ax.transAxes)
     plt.text(0.5, y_pct(0.8), title_text, color="#a0a0b0", fontsize=18, ha='center', va='center', transform=ax.transAxes)
