@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 """
 Metric: Noob (Low Quantity Kills)
 
@@ -70,7 +71,7 @@ class LowQtdKills(MetricReply):
             return MetricResult(score=0, message=None)
 
         if is_zero:
-            message = random.choice(ZERO_KILLS_MESSAGES)(worst['player_name'])
+            message = get_message(ZERO_KILLS_MESSAGES).format(player_name=worst['player_name'])
             return MetricResult(score=200.0, message=message)
 
         # z-score threshold: considered low if 1 std dev below mean
@@ -83,6 +84,6 @@ class LowQtdKills(MetricReply):
         if kills_mean - worst.get('kills', 0) < 2:
             return MetricResult(score=0, message=None)
 
-        message = random.choice(LOW_KILLS_MESSAGES)(worst['player_name'])
+        message = get_message(LOW_KILLS_MESSAGES).format(player_name=worst['player_name'])
 
         return MetricResult(score=normalized_score, message=message)

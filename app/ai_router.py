@@ -1,7 +1,7 @@
 import logging
 import requests
 import json
-from config import GROQ_API_KEY
+from config import GROQ_API_KEY, USE_LOCAL_LLM, LOCAL_LLM_ENDPOINT, LOCAL_LLM_MODEL, LOCAL_LLM_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -12,162 +12,195 @@ MODELS = [
     "openai/gpt-oss-20b"
 ]
 
-SYSTEM_PROMPT_TEMPLATE = """You are the internal command router for a Call of Duty statistics bot on WhatsApp.
-The user spoke to the bot in natural language. Your goal is to map the user's intent to a valid command. Current date: {current_date}
+SYSTEM_PROMPT_TEMPLATE = """You are an intent classifier for a Call of Duty statistics bot on WhatsApp.
+Your ONLY function is to classify the user's intent into one of the allowed categories and extract any mentioned parameters (names, dates, keywords). You MUST output a valid JSON object. Current date: {current_date}
 
-SUPPORTED COMMANDS:
-- `/citation` -> requests a completely RANDOM citation/quote. ONLY map to this if the user EXPLICITLY asks to read a random quote, WITHOUT specifying any topics, names, or keywords.
-- `/searchcitation <keywords>` -> searches for a citation matching specific words. If the user asks for a citation about a specific topic, person, or context (e.g., "me vê uma pérola do Rayol", "citação sobre submarino"), extract the key nouns/names as space-separated keywords and map to this. Do NOT use this if they provide the exact format to SAVE a new quote.
-- `/citation "quote text" - SOBRENOME, Nome` -> SAVES a new citation. ONLY map to this if the user EXPLICITLY asks the bot to save/annotate a quote AND the author is provided in the exact `SOBRENOME, Nome` format (e.g., `FROTA, Pedro`). Do NOT attempt to fix, infer, or hallucinate the author's name to fit the format. If the EXACT format (a word, a comma, a space, and another word) is NOT present in the user's message, you MUST map to null.
-- `/dashboard` -> requests the statistics dashboard. (Can receive exact dates or months: `/dashboard DD/MM/YYYY`, `/dashboard MM/YYYY`, `/dashboard YYYY`, or a range like `/dashboard DD/MM/YYYY MM/YYYY`). If the user asks for "up to today" or similar, the second argument should be the current day/month/year. If they ask for a specific day to the beginning of a month, output the exact dates (e.g. `15/10/2026 01/11/2026`).
-- `/backfill YYYY/MM` -> starts backfilling old data for a specific month. (Must have a specific month. If the user only specifies a year or is vague, map to `null`). If they say "fevereiro", assume the current year.
-- `/backfill end` -> stops the current backfill.
-- `/reload` -> reloads the player names database. Use this when a user says a player joined, someone changed their nick, or asks to update/reload the clan names.
-- `/erase` -> toggles the erase mode to delete a match. Use this if the user asks to "apagar", "deletar", "excluir", "ligar o modo apagar" or similar intent to remove a match/print.
-- `/ignore <PlayerName>` -> ignores the stats for a specific player in the next match processed. If the user asks to ignore someone's stats (e.g. "ignora o Mega Brain", "nao conta os stats do Prefeito"), extract the exact name mentioned and map to this.
-- `/ranks` -> explains how the ranking system, SR, multiplier, and MVP score work. Use this when someone asks how ranks/SR/MVP are calculated, what the ranks are, how to level up, etc.
+CATEGORIES (intent):
+- citation: Request a random quote.
+- searchcitation: Search for a quote using specific keywords.
+- save_citation: Save a quote explicitly formatted as 'SOBRENOME, Nome'.
+- dashboard: See statistics dashboard (can have dates).
+- backfill: Read old match data.
+- backfill_end: Stop reading old data.
+- reload: Update clan names/nicks.
+- erase: Delete or erase a match (e.g. "apagar", "deletar").
+- ignore: Ignore or cancel stats for a player (e.g. "ignora fulano", "cancela os stats do tucano").
+- ranks: Explain ranking system, SR, or MVP.
+- none: Unrelated message or unrecognized command.
 
-STRICT RULES:
-1. You must not converse, you must not greet, you must not explain anything.
-2. You must ONLY return a valid JSON with the key "command_text".
-3. If you cannot map the intent to any known command, return null in the value.
+YOU MUST RETURN A VALID JSON OBJECT WITH EXACTLY THESE TWO KEYS:
+1. "intent": Must be one of the exact categories above.
+2. "parameters": If the user specified a target (a name to ignore, keywords to search, dates to filter), extract them here. Otherwise, return an empty string.
+   - For 'searchcitation', extract keywords.
+   - For 'dashboard' or 'backfill', format dates as DD/MM/YYYY or YYYY/MM. If a date range is requested, you MUST return BOTH dates separated by a space (e.g. '01/01/2026 31/01/2026'). Use the CHEAT SHEET below for relative dates.
+   - For 'ignore', extract the player's name.
 
-Examples:
-User: "@bot guarda essa citação pra mim: \"jogou muito\" - FROTA, Pedro"
-Output: {"command_text": "/citation \"jogou muito\" - FROTA, Pedro"}
-
-User: "anota essa pérola do Matheus: ele disse que ia parar de jogar"
-Output: {"command_text": null}
-
-User: "bot, bota no banco de pérolas o q o Deco falou: 'esse jogo é lixo'"
-Output: {"command_text": null}
-
-User: "ignora o Prefeito no proximo print q vou mandar"
-Output: {"command_text": "/ignore Prefeito"}
-
-User: "cancela os stats do tucano, ele caiu no meio da partida"
-Output: {"command_text": "/ignore tucano"}
-
-User: "@bot me dê uma pérola aleatória do clã"
-Output: {"command_text": "/citation"}
-
-User: "@bot me vê uma pérola do rayol"
-Output: {"command_text": "/searchcitation rayol"}
-
-User: "bot, fala uma pérola do rayol onde ele fala sobre submarino"
-Output: {"command_text": "/searchcitation rayol submarino"}
-
-User: "@bot me mostre as estatísticas"
-Output: {"command_text": "/dashboard"}
-
-User: "bot, me vê o dashboard do dia 15 de outubro até o início de novembro"
-Output: {"command_text": "/dashboard 15/10/2026 01/11/2026"}
-
-User: "faz um café pra mim"
-Output: {"command_text": null}
-
-User: "como você define o Arruda, FREDERICO ?"
-Output: {"command_text": null}
-
-User: "lembra quando o Rayol disse que o jogo tava fácil?"
-Output: {"command_text": null}
-
-User: "salva a minha paciência que tá acabando"
-Output: {"command_text": null}
-
-User: "o Arruda falou que a sniper dele não erra"
-Output: {"command_text": null}
-
-User: "@bot ler partida de fevereiro"
-Output: {"command_text": "/backfill 2026/02"}
-
-User: "@bot ler partida desse ano"
-Output: {"command_text": null}
-
-User: "@bot o Pedro entrou pro clã, já botei o nick dele"
-Output: {"command_text": "/reload"}
-
-User: "@bot mudei meu nick"
-Output: {"command_text": "/reload"}
-
-User: "@bot apaga essa partida aí"
-Output: {"command_text": "/erase"}
-
-User: "bot, liga o modo de apagar partida"
-Output: {"command_text": "/erase"}
-
-User: "como funciona o sistema de rank?"
-Output: {"command_text": "/ranks"}
-
-User: "como é calculado o MVP?"
-Output: {"command_text": "/ranks"}
-
-User: "quanto SR preciso pra ser Diamante?"
-Output: {"command_text": "/ranks"}
-
-User: "quais são os rankings do jogo?"
-Output: {"command_text": "/ranks"}
+Example Output:
+{"intent": "ignore", "parameters": "tucano"}
+{"intent": "dashboard", "parameters": "15/10/2026"}
+{"intent": "erase", "parameters": ""}
 """
 
 def route_message_to_command(text: str) -> str:
     """
-    Tries to map a natural language string to an internal command using Groq AI.
+    Maps a natural language string to an internal command using Groq AI with a fallback to Local LLM.
     Returns:
-        - The mapped command string (e.g. '/citation')
-        - "ERROR_API" if all models fail (rate limits, timeouts, etc.)
-        - "ERROR_MAPPING" if the model explicitly maps it to null (didn't understand).
+        - The mapped command string (e.g. '/ignore tucano')
+        - "ERROR_API" if all models fail
+        - "ERROR_MAPPING" if intent is 'none'
     """
-    if not GROQ_API_KEY:
-        logger.error("GROQ_API_KEY is not set.")
-        return "ERROR_API"
-        
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    # Clean the text from mention artifacts if possible, though the LLM can handle it.
     cleaned_text = text.strip()
+    from datetime import datetime, timedelta
+    today = datetime.now()
+    ontem = (today - timedelta(days=1)).strftime("%d/%m/%Y")
+    semana_passada = (today - timedelta(days=7)).strftime("%d/%m/%Y")
+    semana_retrasada = (today - timedelta(days=14)).strftime("%d/%m/%Y")
+    mes_passado = (today.replace(day=1) - timedelta(days=1)).strftime("%m/%Y")
     
-    from datetime import datetime
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    system_prompt = SYSTEM_PROMPT_TEMPLATE.replace("{current_date}", current_date)
+    cheat_sheet = f"\nDATE CHEAT SHEET:\n- hoje / today: {today.strftime('%d/%m/%Y')}\n- ontem / yesterday: {ontem}\n- semana passada / last week: {semana_passada}\n- semana retrasada: {semana_retrasada}\n- mes passado / last month: {mes_passado}\n"
     
-    for model in MODELS:
-        payload = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": cleaned_text}
-            ],
-            "temperature": 0.0,
-            "response_format": {"type": "json_object"}
-        }
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.replace("{current_date}", today.strftime("%d/%m/%Y")) + cheat_sheet
+    
+    result = None
+    success = False
+
+    # 1. Try Local LLM
+    if USE_LOCAL_LLM:
+        logger.info(f"Trying Local LLM at {LOCAL_LLM_ENDPOINT} with model {LOCAL_LLM_MODEL}")
         
-        logger.info(f"Trying AI routing with model: {model}")
+        # Determine if endpoint is Ollama native or OpenAI-compatible
+        is_openai_compat = "/v1/chat/completions" in LOCAL_LLM_ENDPOINT
+        
+        if is_openai_compat:
+            payload = {
+                "model": LOCAL_LLM_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": cleaned_text}
+                ],
+                "temperature": 0.0,
+                "response_format": {"type": "json_object"},
+                "stream": True
+            }
+        else:
+            # Native Ollama API
+            payload = {
+                "model": LOCAL_LLM_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": cleaned_text}
+                ],
+                "format": "json",
+                "stream": True,
+                "options": {"temperature": 0.0},
+                "keep_alive": "2h"
+            }
+            
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=15)
+            # timeout=(connect_timeout, read_timeout)
+            response = requests.post(LOCAL_LLM_ENDPOINT, json=payload, timeout=(3.0, LOCAL_LLM_TIMEOUT), stream=True)
             response.raise_for_status()
             
-            data = response.json()
-            content = data["choices"][0]["message"]["content"]
-            result = json.loads(content)
+            full_content = ""
+            for line in response.iter_lines():
+                if line:
+                    decoded_line = line.decode('utf-8')
+                    if is_openai_compat:
+                        if decoded_line.startswith("data: "):
+                            data_str = decoded_line[6:]
+                            if data_str == "[DONE]":
+                                break
+                            try:
+                                chunk = json.loads(data_str)
+                                delta = chunk["choices"][0]["delta"]
+                                if "content" in delta and delta["content"]:
+                                    full_content += delta["content"]
+                            except json.JSONDecodeError:
+                                continue
+                    else:
+                        try:
+                            chunk = json.loads(decoded_line)
+                            if "message" in chunk and "content" in chunk["message"]:
+                                full_content += chunk["message"]["content"]
+                            if chunk.get("done"):
+                                break
+                        except json.JSONDecodeError:
+                            continue
             
-            command_text = result.get("command_text")
-            
-            if command_text is None:
-                logger.info(f"Model {model} returned null (ERROR_MAPPING). Text: {cleaned_text}")
-                return "ERROR_MAPPING"
-                
-            logger.info(f"Model {model} successfully routed to: {command_text}")
-            return command_text
-            
+            result = json.loads(full_content)
+            success = True
         except Exception as e:
-            logger.warning(f"Model {model} failed: {e}")
-            if hasattr(e, 'response') and e.response is not None:
-                logger.warning(f"Response: {e.response.text}")
-            continue
-            
-    logger.error("All AI models failed to route the message (ERROR_API).")
-    return "ERROR_API"
+            logger.error(f"Local LLM failed: {e}")
+
+    # 2. Try Groq API Fallback
+    if not success and GROQ_API_KEY:
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        for model in MODELS:
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": cleaned_text}
+                ],
+                "temperature": 0.0,
+                "response_format": {"type": "json_object"}
+            }
+            logger.info(f"Trying Groq AI fallback routing with model: {model}")
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=15)
+                response.raise_for_status()
+                content = response.json()["choices"][0]["message"]["content"]
+                result = json.loads(content)
+                success = True
+                break
+            except Exception as e:
+                logger.warning(f"Groq Model {model} failed: {e}")
+                continue
+    elif not success:
+        logger.warning("GROQ_API_KEY is not set. Skipping Groq API fallback.")
+
+    # 3. Process Result
+    if not success or not result:
+        logger.error("All AI models failed to route the message (ERROR_API).")
+        return "ERROR_API"
+
+    intent = result.get("intent", "none").lower()
+    params = result.get("parameters", "").strip()
+    
+    if intent == "none" or not intent:
+        logger.info(f"Model returned none intent. Text: {cleaned_text}")
+        return "ERROR_MAPPING"
+        
+    # Python-based Command Construction
+    command_final = ""
+    if intent == "citation":
+        command_final = "/citation"
+    elif intent == "searchcitation":
+        command_final = f"/searchcitation {params}"
+    elif intent == "save_citation":
+        command_final = f"/citation {params}"
+    elif intent == "dashboard":
+        command_final = f"/dashboard {params}"
+    elif intent == "backfill":
+        command_final = f"/backfill {params}"
+    elif intent == "backfill_end":
+        command_final = "/backfill end"
+    elif intent == "reload":
+        command_final = "/reload"
+    elif intent == "erase":
+        command_final = "/erase"
+    elif intent == "ignore":
+        command_final = f"/ignore {params}"
+    elif intent == "ranks":
+        command_final = "/ranks"
+    else:
+        return "ERROR_MAPPING"
+        
+    command_final = command_final.strip()
+    logger.info(f"Successfully routed intent '{intent}' to command: {command_final}")
+    return command_final
+

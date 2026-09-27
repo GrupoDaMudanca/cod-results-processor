@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 """
 Metric: Anchor (High Quantity Redeploys)
 
@@ -82,6 +83,6 @@ class HighQuantityRedeploys(MetricReply):
         if kills_z_score > 0.5:
             return MetricResult(score=0, message=None)
 
-        message = random.choice(HIGH_REDEPLOYS_MESSAGES)(worst['player_name'])
+        message = get_message(HIGH_REDEPLOYS_MESSAGES).format(player_name=worst['player_name'])
 
         return MetricResult(score=normalized_score, message=message)

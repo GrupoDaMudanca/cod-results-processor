@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 """
 Metric: Kill Stealer
 
@@ -71,6 +72,6 @@ class KillStealer(MetricReply):
             return MetricResult(score=0, message=None)
 
         normalized_score = min(100, max(0, z_score * 25))
-        message = random.choice(KILL_STEALER_MESSAGES)(best_stealer['player_name'])
+        message = get_message(KILL_STEALER_MESSAGES).format(player_name=best_stealer['player_name'])
 
         return MetricResult(score=normalized_score, message=message)

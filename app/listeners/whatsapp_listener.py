@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 import logging
 import time
 import os
@@ -173,7 +174,7 @@ class WhatsAppListener(BaseListener):
                 from app.messages.system import ERROR_UNEXPECTED_MESSAGES
                 import random
                 messenger = get_messenger()
-                messenger.send_message(random.choice(ERROR_UNEXPECTED_MESSAGES), reply_to_message_id=str(message_id), msg_type="ERROR")
+                messenger.send_message(get_message(ERROR_UNEXPECTED_MESSAGES), reply_to_message_id=str(message_id), msg_type="ERROR")
             except:
                 pass
 
@@ -257,7 +258,7 @@ class WhatsAppListener(BaseListener):
                     import random
                     from app.messengers import get_messenger
                     messenger = get_messenger()
-                    messenger.send_message(random.choice(AI_TOO_LONG_MESSAGES), reply_to_message=reply_to, msg_type="AI_TOO_LONG")
+                    messenger.send_message(get_message(AI_TOO_LONG_MESSAGES), reply_to_message=reply_to, msg_type="AI_TOO_LONG")
                     continue
                     
                 from app.ai_router import route_message_to_command
@@ -269,9 +270,9 @@ class WhatsAppListener(BaseListener):
                 messenger = get_messenger()
                 
                 if cmd_or_err == "ERROR_API":
-                    messenger.send_message(random.choice(AI_ERROR_MESSAGES), reply_to_message=reply_to, msg_type="AI_ERROR")
+                    messenger.send_message(get_message(AI_ERROR_MESSAGES), reply_to_message=reply_to, msg_type="AI_ERROR")
                 elif cmd_or_err == "ERROR_MAPPING":
-                    messenger.send_message(random.choice(AI_INVALID_MAPPING_MESSAGES), reply_to_message=reply_to, msg_type="AI_MAPPING_ERROR")
+                    messenger.send_message(get_message(AI_INVALID_MAPPING_MESSAGES), reply_to_message=reply_to, msg_type="AI_MAPPING_ERROR")
                 elif cmd_or_err:
                     admins = self._get_chat_administrators(chat_id)
                     from_id = self._resolve_sender_id(from_id)
@@ -293,7 +294,7 @@ class WhatsAppListener(BaseListener):
                         from app.messengers import get_messenger
                         messenger = get_messenger()
                         messenger.send_message(
-                            random.choice(PROCESSING_MESSAGES),
+                            get_message(PROCESSING_MESSAGES),
                             reply_to_message=reply_to,
                             msg_type="SYSTEM_PROCESSING"
                         )

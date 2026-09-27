@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 import random
 import re
 import logging
@@ -21,13 +22,13 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
     
     if text.startswith('/ignore'):
         if not is_admin and not is_unrestricted():
-            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
+            messenger.send_message(get_message(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
             return
             
         args = text.strip().split(maxsplit=1)
         if len(args) < 2:
             from app.messages.ignore import IGNORE_MISSING_ARGUMENT_MESSAGES
-            messenger.send_message(random.choice(IGNORE_MISSING_ARGUMENT_MESSAGES), reply_to_message=reply_to, msg_type="IGNORE_MISSING_ARGUMENT")
+            messenger.send_message(get_message(IGNORE_MISSING_ARGUMENT_MESSAGES), reply_to_message=reply_to, msg_type="IGNORE_MISSING_ARGUMENT")
             return
             
         player_name = args[1].strip()
@@ -42,44 +43,44 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
         
         if not matched_key:
             from app.messages.ignore import IGNORE_NOT_FOUND_MESSAGES
-            messenger.send_message(random.choice(IGNORE_NOT_FOUND_MESSAGES).format(player_name=player_name), reply_to_message=reply_to, msg_type="IGNORE_NOT_FOUND")
+            messenger.send_message(get_message(IGNORE_NOT_FOUND_MESSAGES).format(player_name=player_name), reply_to_message=reply_to, msg_type="IGNORE_NOT_FOUND")
             return
             
         from app.state_ignore import set_ignore_player
         from app.messages.ignore import IGNORE_ACTIVATED_MESSAGES
         set_ignore_player(matched_key)
-        messenger.send_message(random.choice(IGNORE_ACTIVATED_MESSAGES).format(player_name=matched_key), reply_to_message=reply_to, msg_type="IGNORE_ACTIVATED")
+        messenger.send_message(get_message(IGNORE_ACTIVATED_MESSAGES).format(player_name=matched_key), reply_to_message=reply_to, msg_type="IGNORE_ACTIVATED")
         return
 
     if text == '/unrestrict':
         if not is_admin and not is_unrestricted():
-            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
+            messenger.send_message(get_message(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
             return
         from app.messages.unrestrict import UNRESTRICTED_MESSAGES
         set_unrestricted()
-        messenger.send_message(random.choice(UNRESTRICTED_MESSAGES), reply_to_message=reply_to, msg_type="UNRESTRICTED")
+        messenger.send_message(get_message(UNRESTRICTED_MESSAGES), reply_to_message=reply_to, msg_type="UNRESTRICTED")
         return
         
     if text == '/restrict':
         if not is_admin and not is_unrestricted():
-            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
+            messenger.send_message(get_message(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
             return
         from app.messages.unrestrict import RESTRICTED_MESSAGES
         clear_unrestricted()
-        messenger.send_message(random.choice(RESTRICTED_MESSAGES), reply_to_message=reply_to, msg_type="RESTRICTED")
+        messenger.send_message(get_message(RESTRICTED_MESSAGES), reply_to_message=reply_to, msg_type="RESTRICTED")
         return
 
     if text.startswith('/backfill'):
         if not is_admin and not is_unrestricted():
-            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
+            messenger.send_message(get_message(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
             return
             
         if text == '/backfill end':
             if not get_backfill():
-                messenger.send_message(random.choice(BACKFILL_NOT_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="BACKFILL_NOT_ACTIVE")
+                messenger.send_message(get_message(BACKFILL_NOT_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="BACKFILL_NOT_ACTIVE")
                 return
             clear_backfill()
-            messenger.send_message(random.choice(BACKFILL_END_MESSAGES), reply_to_message=reply_to, msg_type="BACKFILL_END")
+            messenger.send_message(get_message(BACKFILL_END_MESSAGES), reply_to_message=reply_to, msg_type="BACKFILL_END")
         else:
             args = text.strip().split()
             if len(args) > 1:
@@ -94,18 +95,18 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
                     year = match2.group(2)
                     month = match2.group(1)
                 else:
-                    messenger.send_message(random.choice(INVALID_BACKFILL_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="INVALID_BACKFILL_FORMAT")
+                    messenger.send_message(get_message(INVALID_BACKFILL_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="INVALID_BACKFILL_FORMAT")
                     return
                 
                 if get_backfill():
-                    messenger.send_message(random.choice(BACKFILL_ALREADY_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="BACKFILL_ALREADY_ACTIVE")
+                    messenger.send_message(get_message(BACKFILL_ALREADY_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="BACKFILL_ALREADY_ACTIVE")
                     return
                 
                 set_backfill(year, month)
-                message_text = random.choice(BACKFILL_START_MESSAGES).format(month=month, year=year)
+                message_text = get_message(BACKFILL_START_MESSAGES).format(month=month, year=year)
                 messenger.send_message(message_text, reply_to_message=reply_to, msg_type="BACKFILL_START")
             else:
-                messenger.send_message(random.choice(INVALID_BACKFILL_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="INVALID_BACKFILL_FORMAT")
+                messenger.send_message(get_message(INVALID_BACKFILL_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="INVALID_BACKFILL_FORMAT")
     
     elif text.startswith(('/dashboard', '/dash')):
         from dashboard import generate_dashboard_image
@@ -145,52 +146,52 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
         if len(args) == 2:
             s_dt, e_dt = parse_date_arg(args[1])
             if s_dt is None:
-                messenger.send_message(random.choice(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
+                messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
                 return
             start_date = s_dt
             end_date = e_dt
         elif len(args) >= 3:
             if re.match(r'^(\d{4})$', args[1]) or re.match(r'^(\d{4})$', args[2]):
-                messenger.send_message(random.choice(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
+                messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
                 return
                 
             s_dt, _ = parse_date_arg(args[1])
             _, e_dt = parse_date_arg(args[2])
             
             if s_dt is None or e_dt is None:
-                messenger.send_message(random.choice(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
+                messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
                 return
             start_date = s_dt
             end_date = e_dt
             
         if start_date and end_date:
             if start_date > end_date:
-                messenger.send_message(random.choice(DASHBOARD_INVERTED_DATES_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVERTED_DATES")
+                messenger.send_message(get_message(DASHBOARD_INVERTED_DATES_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVERTED_DATES")
                 return
                 
             months_diff = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
             if months_diff > 11:
-                messenger.send_message(random.choice(DASHBOARD_TOO_MANY_MONTHS_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_TOO_MANY_MONTHS")
+                messenger.send_message(get_message(DASHBOARD_TOO_MANY_MONTHS_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_TOO_MANY_MONTHS")
                 return
                 
             now_dt = datetime.now()
             if start_date.date() > now_dt.date():
-                messenger.send_message(random.choice(DASHBOARD_FUTURE_MONTH_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_FUTURE_MONTH")
+                messenger.send_message(get_message(DASHBOARD_FUTURE_MONTH_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_FUTURE_MONTH")
                 return
                 
             if end_date > now_dt:
                 end_date = now_dt
             
-            messenger.send_message(random.choice(DASHBOARD_START_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_START")
+            messenger.send_message(get_message(DASHBOARD_START_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_START")
             dashboard_path = generate_dashboard_image(start_date=start_date, end_date=end_date)
         else:
-            messenger.send_message(random.choice(DASHBOARD_START_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_START")
+            messenger.send_message(get_message(DASHBOARD_START_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_START")
             dashboard_path = generate_dashboard_image()
             
         if dashboard_path:
-            messenger.send_photo(dashboard_path, caption=random.choice(DASHBOARD_END_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_REPLY")
+            messenger.send_photo(dashboard_path, caption=get_message(DASHBOARD_END_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_REPLY")
         else:
-            messenger.send_message(random.choice(DASHBOARD_NO_DATA_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_NO_DATA")
+            messenger.send_message(get_message(DASHBOARD_NO_DATA_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_NO_DATA")
     
     elif text.startswith('/searchcitation'):
         from app.citations import search_citations
@@ -203,9 +204,9 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
             if citation:
                 messenger.send_message(f"📖 *Pérola:*\n\n{citation}", reply_to_message=reply_to, msg_type="CITATION_SEARCH_SUCCESS")
             else:
-                messenger.send_message(random.choice(CITATION_SEARCH_EMPTY_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_SEARCH_EMPTY")
+                messenger.send_message(get_message(CITATION_SEARCH_EMPTY_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_SEARCH_EMPTY")
         else:
-            messenger.send_message(random.choice(CITATION_SEARCH_EMPTY_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_SEARCH_EMPTY")
+            messenger.send_message(get_message(CITATION_SEARCH_EMPTY_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_SEARCH_EMPTY")
 
     elif text.startswith(('/citation')):
         from app.citations import save_citation, get_random_citation
@@ -216,42 +217,42 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
             citation_text = args[1].strip()
             success = save_citation(citation_text)
             if success:
-                messenger.send_message(random.choice(CITATION_SAVED_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_SAVED")
+                messenger.send_message(get_message(CITATION_SAVED_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_SAVED")
             else:
-                messenger.send_message(random.choice(ERROR_UNEXPECTED_MESSAGES), reply_to_message=reply_to, msg_type="ERROR_UNEXPECTED")
+                messenger.send_message(get_message(ERROR_UNEXPECTED_MESSAGES), reply_to_message=reply_to, msg_type="ERROR_UNEXPECTED")
         else:
             citation = get_random_citation()
             if citation:
                 messenger.send_message(f"📖 *Pérola:*\n\n{citation}", reply_to_message=reply_to, msg_type="CITATION_RANDOM")
             else:
-                messenger.send_message(random.choice(CITATION_EMPTY_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_EMPTY")
+                messenger.send_message(get_message(CITATION_EMPTY_MESSAGES), reply_to_message=reply_to, msg_type="CITATION_EMPTY")
 
     elif text.startswith('/reload'):
         from app.commands import reload_missing_player_names
         from app.messages import RELOAD_START_MESSAGES, RELOAD_SUCCESS_MESSAGES, RELOAD_NO_CHANGES_MESSAGES
         
-        messenger.send_message(random.choice(RELOAD_START_MESSAGES), reply_to_message=reply_to, msg_type="RELOAD_START")
+        messenger.send_message(get_message(RELOAD_START_MESSAGES), reply_to_message=reply_to, msg_type="RELOAD_START")
         
         updated = reload_missing_player_names()
         if updated > 0:
-            msg = random.choice(RELOAD_SUCCESS_MESSAGES).replace('{count}', str(updated))
+            msg = get_message(RELOAD_SUCCESS_MESSAGES).replace('{count}', str(updated))
             messenger.send_message(msg, reply_to_message=reply_to, msg_type="RELOAD_SUCCESS")
         else:
-            messenger.send_message(random.choice(RELOAD_NO_CHANGES_MESSAGES), reply_to_message=reply_to, msg_type="RELOAD_NO_CHANGES")
+            messenger.send_message(get_message(RELOAD_NO_CHANGES_MESSAGES), reply_to_message=reply_to, msg_type="RELOAD_NO_CHANGES")
 
     elif text.startswith('/erase'):
         from app.state_erase import get_erase, set_erase, clear_erase
         from app.messages.erase import ERASE_ACTIVE_MESSAGES, ERASE_INACTIVE_MESSAGES
         
         if not is_admin and not is_unrestricted():
-            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
+            messenger.send_message(get_message(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
             return
 
         if get_erase():
-            messenger.send_message(random.choice(ERASE_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_ACTIVE")
+            messenger.send_message(get_message(ERASE_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_ACTIVE")
         else:
             set_erase()
-            messenger.send_message(random.choice(ERASE_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_ACTIVE")
+            messenger.send_message(get_message(ERASE_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_ACTIVE")
 
     elif text.startswith('/ranks'):
         from app.messages.ranks import RANKS_INFO_MESSAGE

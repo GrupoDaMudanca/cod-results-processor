@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 import logging
 import random
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -63,19 +64,19 @@ def send_daily_win_check():
             logger.error(f"Failed to read CSV for win check: {e}")
             
     if wins_today == 1:
-        res = messenger.send_message(random.choice(WIN_CHECK_SINGLE_WIN_MESSAGES), msg_type="WIN_CHECK_SINGLE")
+        res = messenger.send_message(get_message(WIN_CHECK_SINGLE_WIN_MESSAGES), msg_type="WIN_CHECK_SINGLE")
     elif wins_today > 1:
-        msg = random.choice(WIN_CHECK_MULTIPLE_WINS_MESSAGES).replace("{count}", str(wins_today))
+        msg = get_message(WIN_CHECK_MULTIPLE_WINS_MESSAGES).replace("{count}", str(wins_today))
         res = messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE")
     else:
         if days_without_win >= 3:
-            msg = random.choice(WIN_CHECK_EXTREME_FAIL_MESSAGES).replace("{days}", str(days_without_win))
+            msg = get_message(WIN_CHECK_EXTREME_FAIL_MESSAGES).replace("{days}", str(days_without_win))
             res = messenger.send_message(msg, msg_type="WIN_CHECK_EXTREME_FAIL")
         elif days_without_win > 1:
-            msg = random.choice(WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES).replace("{days}", str(days_without_win))
+            msg = get_message(WIN_CHECK_MULTIPLE_DAYS_FAIL_MESSAGES).replace("{days}", str(days_without_win))
             res = messenger.send_message(msg, msg_type="WIN_CHECK_MULTIPLE_FAIL")
         else:
-            res = messenger.send_message(random.choice(WIN_CHECK_FAIL_MESSAGES), msg_type="WIN_CHECK_FAIL")
+            res = messenger.send_message(get_message(WIN_CHECK_FAIL_MESSAGES), msg_type="WIN_CHECK_FAIL")
             
     if res is None:
         raise Exception("Failed to send win check message")
@@ -126,10 +127,10 @@ def send_morning_motivation():
     res = False
     if wins_yesterday == 0:
         if days_without_win >= 4:
-            msg = random.choice(MORNING_EXTREME_MOTIVATION_MESSAGES)
+            msg = get_message(MORNING_EXTREME_MOTIVATION_MESSAGES)
             res = messenger.send_message(msg, msg_type="MORNING_EXTREME_MOTIVATION")
         else:
-            res = messenger.send_message(random.choice(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
+            res = messenger.send_message(get_message(MORNING_MOTIVATION_MESSAGES), msg_type="MORNING_MOTIVATION")
     else:
         logger.info("They won yesterday, so no motivation needed today.")
         res = True
@@ -174,7 +175,7 @@ def send_monthly_awards():
     year = first_day_prev_month.year
     messenger.send_photo(dashboard_path, caption=None, msg_type="MONTHLY_DASHBOARD")
     
-    intro_msg = random.choice(MONTHLY_AWARD_INTRO_MESSAGES)
+    intro_msg = get_message(MONTHLY_AWARD_INTRO_MESSAGES)
     text_parts = [
         "*🏆 PREMIAÇÕES DO MÊS 🏆*",
         f"_{intro_msg}_"
@@ -203,7 +204,7 @@ def send_monthly_awards():
             text_parts.append("- " + template.format(name=name, val=val))
             
     
-    outro_msg = random.choice(MONTHLY_AWARD_OUTRO_MESSAGES)
+    outro_msg = get_message(MONTHLY_AWARD_OUTRO_MESSAGES)
     text_parts.append(f"_{outro_msg}_")
             
     final_text = "\n\n".join(text_parts)
@@ -235,7 +236,7 @@ def send_month_end_hype():
             days_str = f"{days_left} dias"
             title = f"*FALTAM {days_left} DIAS!*"
             
-        intro_msg = random.choice(MONTH_END_HYPE_MESSAGES).replace("{days}", days_str)
+        intro_msg = get_message(MONTH_END_HYPE_MESSAGES).replace("{days}", days_str)
         text_parts = [
             title,
             f"_{intro_msg}_"
@@ -274,7 +275,7 @@ def send_month_end_hype():
                     
                     text_parts.append("- " + template.format(name=name, val=val))
                     
-        outro_msg = random.choice(MONTH_END_HYPE_OUTRO_MESSAGES)
+        outro_msg = get_message(MONTH_END_HYPE_OUTRO_MESSAGES)
         text_parts.append(f"_{outro_msg}_")
         
         msg = "\n\n".join(text_parts)

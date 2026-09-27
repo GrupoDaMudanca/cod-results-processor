@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 """
 Metric: Match MVP
 
@@ -68,6 +69,6 @@ class MatchMVP(MetricReply):
             return MetricResult(score=0, message=None)
 
         normalized_score = min(100, max(0, z_score * 25))
-        message = random.choice(MATCH_MVP_MESSAGES)(best['player_name'])
+        message = get_message(MATCH_MVP_MESSAGES).format(player_name=best['player_name'])
 
         return MetricResult(score=normalized_score, message=message)

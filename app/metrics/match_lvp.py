@@ -1,3 +1,4 @@
+from app.ai_enricher import get_message
 """
 Metric: Match LVP (Least Valuable Player)
 
@@ -66,6 +67,6 @@ class MatchLVP(MetricReply):
             return MetricResult(score=0, message=None)
 
         normalized_score = min(100, max(0, z_score * 25))
-        message = random.choice(MATCH_LVP_MESSAGES)(worst['player_name'])
+        message = get_message(MATCH_LVP_MESSAGES).format(player_name=worst['player_name'])
 
         return MetricResult(score=normalized_score, message=message)
