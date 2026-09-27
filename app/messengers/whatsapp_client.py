@@ -39,15 +39,15 @@ class WhatsAppClient(MessengerClient):
         }
 
         try:
-            logger.info(f"[EVOLUTION_OUTGOING] Type: {msg_type} | Message: {text}")
+            logger.info(f"[WHATSAPP_OUTGOING] Type: {msg_type} | Message: {text}")
             response = requests.post(EVOLUTION_SEND_TEXT_ENDPOINT, json=payload, headers=headers)
             response.raise_for_status()
             return response.json()
         except Exception as e:
             if hasattr(e, 'response') and e.response is not None:
-                logger.error(f"Failed to send Evolution message: {e} - Response: {e.response.text}")
+                logger.error(f"Failed to send WhatsApp message: {e} - Response: {e.response.text}")
             else:
-                logger.error(f"Failed to send Evolution message: {e}")
+                logger.error(f"Failed to send WhatsApp message: {e}")
             return None
 
     def send_photo(self, photo_path: str, caption: str = None, reply_to_message: dict = None, msg_type: str = "UNKNOWN", chat_id: str = None):
@@ -88,15 +88,15 @@ class WhatsAppClient(MessengerClient):
                 "apikey": EVOLUTION_API_KEY
             }
 
-            logger.info(f"[EVOLUTION_OUTGOING] Type: {msg_type} | Photo with caption: {caption}")
+            logger.info(f"[WHATSAPP_OUTGOING] Type: {msg_type} | Photo with caption: {caption}")
             response = requests.post(EVOLUTION_SEND_MEDIA_ENDPOINT, json=payload, headers=headers)
             response.raise_for_status()
             return response.json()
         except Exception as e:
             if hasattr(e, 'response') and e.response is not None:
-                logger.error(f"Failed to send Evolution photo: {e} - Response: {e.response.text}")
+                logger.error(f"Failed to send WhatsApp photo: {e} - Response: {e.response.text}")
             else:
-                logger.error(f"Failed to send Evolution photo: {e}")
+                logger.error(f"Failed to send WhatsApp photo: {e}")
             return None
 
     def wait_until_ready(self) -> bool:
@@ -110,7 +110,7 @@ class WhatsAppClient(MessengerClient):
             "apikey": EVOLUTION_API_KEY
         }
         
-        logger.info("Checking if EvolutionAPI session is ready...")
+        logger.info("Checking if WhatsApp session is ready...")
         max_retries = 36 # 3 minutes total
         for _ in range(max_retries):
             try:
@@ -120,13 +120,13 @@ class WhatsAppClient(MessengerClient):
                     # Example Evolution v2 connect response contains state
                     instance_data = data.get('instance', {})
                     if instance_data.get('state') == 'open' or data.get('state') == 'open':
-                        logger.info("EvolutionAPI session is connected.")
+                        logger.info("WhatsApp session is connected.")
                         return True
             except Exception:
                 pass
             
-            logger.info("EvolutionAPI session not ready yet. Retrying in 5 seconds...")
+            logger.info("WhatsApp session not ready yet. Retrying in 5 seconds...")
             time.sleep(5)
             
-        logger.warning("EvolutionAPI session did not become ready within the timeout.")
+        logger.warning("WhatsApp session did not become ready within the timeout.")
         return False

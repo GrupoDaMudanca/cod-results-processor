@@ -18,6 +18,8 @@ class WhatsAppListener(BaseListener):
         self.webhook_server = WhatsAppWebhookServer(self.whatsapp_queue)
         self.webhook_server.start_in_background()
         self.bot_ids = []
+        self._admin_cache = {}
+        self._admin_cache_time = {}
         self._init_bot_identity()
 
     def _init_bot_identity(self):
@@ -26,7 +28,7 @@ class WhatsAppListener(BaseListener):
         
         client = WhatsAppClient()
         if not client.wait_until_ready():
-            logger.warning("EvolutionAPI session did not become ready. Cannot fetch bot identity yet.")
+            logger.warning("WhatsApp session did not become ready. Cannot fetch bot identity yet.")
             return False
             
         try:
@@ -61,15 +63,21 @@ class WhatsAppListener(BaseListener):
                         except Exception as e:
                             logger.error(f"Failed to fetch bot LID from group: {e}")
 
-                logger.info(f"EvolutionAPI Bot Identity initialized: IDs={self.bot_ids}")
+                logger.info(f"Bot Identity initialized: IDs={self.bot_ids}")
                 return True
         except Exception as e:
-            logger.error(f"Error fetching EvolutionAPI bot identity: {e}")
+            logger.error(f"Error fetching Bot identity: {e}")
         return False
 
     def _get_chat_administrators(self, chat_id: str) -> list[str]:
         if not chat_id or not chat_id.endswith('@g.us'):
             return [chat_id]
+            
+        import time
+        now = time.time()
+        # Cache for 1 hour (3600 seconds)
+        if getattr(self, '_admin_cache', None) is not None and chat_id in self._admin_cache and (now - self._admin_cache_time.get(chat_id, 0)) < 3600:
+            return self._admin_cache[chat_id]
             
         try:
             url = f"{EVOLUTION_GET_CHAT_ENDPOINT}?groupJid={chat_id}"
@@ -84,15 +92,33 @@ class WhatsAppListener(BaseListener):
                 if p.get('admin') == 'admin' or p.get('admin') == 'superadmin':
                     admin_id = p.get('id')
                     if admin_id:
+                        if ':' in admin_id and '@' in admin_id:
+                            number = admin_id.split(':')[0]
+                            domain = admin_id.split('@')[1]
+                            admin_id = f"{number}@{domain}"
+                        if admin_id.endswith('@lid'):
+                            admin_id = admin_id.replace('@lid', '@s.whatsapp.net')
                         admins.append(admin_id)
+            self._admin_cache[chat_id] = admins
+            self._admin_cache_time[chat_id] = now
             return admins
         except Exception as e:
             logger.error(f'Failed to get WhatsApp chat administrators: {e}')
+            if getattr(self, '_admin_cache', None) is not None:
+                return self._admin_cache.get(chat_id, [])
             return []
 
     def _resolve_sender_id(self, from_id: str) -> str:
+        if not from_id:
+            return from_id
+        # Strip device ID (e.g. 5511999999999:15@s.whatsapp.net -> 5511999999999@s.whatsapp.net)
+        if ':' in from_id and '@' in from_id:
+            number = from_id.split(':')[0]
+            domain = from_id.split('@')[1]
+            from_id = f"{number}@{domain}"
+            
         # EvolutionAPI usually returns the correct s.whatsapp.net ID directly
-        if not from_id or not from_id.endswith('@lid'):
+        if not from_id.endswith('@lid'):
             return from_id
         # In case a lid arrives (rare in Evolution API v2 for normal upserts)
         return from_id.replace('@lid', '@s.whatsapp.net')
@@ -108,7 +134,7 @@ class WhatsAppListener(BaseListener):
         if not has_media:
             return
             
-        logger.info(f"Downloading EvolutionAPI media for {message_id}")
+        logger.info(f"Downloading WhatsApp media for {message_id}")
         
         try:
             download_url = f"{EVOLUTION_GET_BASE64_MEDIA_ENDPOINT}"
@@ -122,7 +148,7 @@ class WhatsAppListener(BaseListener):
             
             base64_data = media_data.get('base64')
             if not base64_data:
-                logger.error("No base64 data returned by EvolutionAPI.")
+                logger.error("No base64 data returned by WhatsApp.")
                 return
                 
             # Evolution sometimes returns "data:image/jpeg;base64,..."
@@ -141,7 +167,7 @@ class WhatsAppListener(BaseListener):
             save_media_metadata(file_name, str(message_id), date, remote_jid, participant)
             
         except Exception as e:
-            logger.error(f"Failed to download EvolutionAPI media: {e}")
+            logger.error(f"Failed to download WhatsApp media: {e}")
             try:
                 from app.messengers import get_messenger
                 from app.messages.system import ERROR_UNEXPECTED_MESSAGES
@@ -166,7 +192,7 @@ class WhatsAppListener(BaseListener):
         while self.whatsapp_queue:
             batch.append(self.whatsapp_queue.pop(0))
             
-        logger.info(f"Processing EvolutionAPI batch of {len(batch)} messages.")
+        logger.info(f"Processing WhatsApp batch of {len(batch)} messages.")
         
         if not self.bot_ids:
             self._init_bot_identity()
@@ -201,9 +227,12 @@ class WhatsAppListener(BaseListener):
                 from_id = self._resolve_sender_id(from_id)
                 
                 is_admin = from_id in admins
+                logger.debug(f"EXPLICIT: from_id='{from_id}', admins={admins}, is_admin={is_admin}")
                 handle_command(text, reply_to, from_id, chat_id, is_admin=is_admin)
-                continue
-
+                # Don't continue here, we still need to process the media if there is any!
+                # But we should clear the text so it doesn't trigger AI routing later
+                text = ""
+                
             msg_to = chat_id # in groups remoteJid is the group, in private it's the sender
             
             is_mentioned = False
@@ -221,7 +250,7 @@ class WhatsAppListener(BaseListener):
                     bot_num = b_id.split('@')[0]
                     text = re.sub(f"(?i)@{bot_num}", "", text).strip()
                 
-                logger.info(f"EvolutionAPI Bot mentioned! Attempting AI routing for text: {text}")
+                logger.info(f"Bot mentioned! Attempting AI routing for text: {text}")
                 
                 if len(text) > 300:
                     from app.messages.ai import AI_TOO_LONG_MESSAGES
@@ -247,10 +276,10 @@ class WhatsAppListener(BaseListener):
                     admins = self._get_chat_administrators(chat_id)
                     from_id = self._resolve_sender_id(from_id)
                     is_admin = from_id in admins
+                    logger.debug(f"from_id='{from_id}', admins={admins}, is_admin={is_admin}")
                     logger.info(f"AI Routed command: {cmd_or_err}")
                     handle_command(cmd_or_err, reply_to, from_id, chat_id, is_admin=is_admin)
-                continue
-
+                
             has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
             if has_media:
                 has_photo = True
@@ -273,7 +302,7 @@ class WhatsAppListener(BaseListener):
                         logger.error(f"Failed to send processing message: {e}")
 
         if has_photo:
-            logger.info("Finished downloading EvolutionAPI media from batch.")
+            logger.info("Finished downloading WhatsApp media from batch.")
             return self.last_processed_id
             
         return None

@@ -43,7 +43,7 @@ class WhatsAppWebhookServer:
 
                 self.queue.append(message)
                 msg_id = message.get('key', {}).get('id') or message.get('messageId')
-                logger.info(f"Received Evolution message added to queue: {msg_id}")
+                logger.info(f"Received WhatsApp message added to queue: {msg_id}")
 
         return jsonify({"status": "ok"}), 200
 

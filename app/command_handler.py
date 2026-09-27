@@ -242,10 +242,13 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
     elif text.startswith('/erase'):
         from app.state_erase import get_erase, set_erase, clear_erase
         from app.messages.erase import ERASE_ACTIVE_MESSAGES, ERASE_INACTIVE_MESSAGES
+        
+        if not is_admin and not is_unrestricted():
+            messenger.send_message(random.choice(UNAUTHORIZED_MESSAGES), reply_to_message=reply_to, msg_type="UNAUTHORIZED")
+            return
 
         if get_erase():
-            clear_erase()
-            messenger.send_message(random.choice(ERASE_INACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_INACTIVE")
+            messenger.send_message(random.choice(ERASE_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_ACTIVE")
         else:
             set_erase()
             messenger.send_message(random.choice(ERASE_ACTIVE_MESSAGES), reply_to_message=reply_to, msg_type="ERASE_ACTIVE")

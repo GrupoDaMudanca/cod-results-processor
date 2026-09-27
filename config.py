@@ -4,6 +4,11 @@ import time
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 GEMINI_DESIRED_MODEL = os.environ.get('GEMINI_DESIRED_MODEL')
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
+
+USE_LOCAL_LLM = os.environ.get('USE_LOCAL_LLM', 'false').lower() == 'true'
+LOCAL_LLM_ENDPOINT = os.environ.get('LOCAL_LLM_ENDPOINT', 'http://llama.home.arpa:11434/v1/chat/completions')
+LOCAL_LLM_MODEL = os.environ.get('LOCAL_LLM_MODEL', 'qwen3:8b')
+LOCAL_LLM_TIMEOUT = int(os.environ.get('LOCAL_LLM_TIMEOUT', '5'))
 RESULT_FILETYPES = os.environ.get('RESULT_FILETYPES').replace(' ', '').split(',')
 RESULT_FILES_PATH = os.environ.get('RESULT_FILES_PATH')
 OUTPUT_FILES_PATH = os.environ.get('OUTPUT_FILES_PATH')
