@@ -50,3 +50,16 @@ services:
       - ./.data/evolution_instances:/evolution/instances
       - ./.data/evolution_store:/evolution/store
     restart: unless-stopped
+
+  evolution-manager:
+    image: evoapicloud/evolution-manager:v2.3.5
+    container_name: evolution-manager
+    entrypoint: >
+      /bin/sh -c "sed -i 's/must-revalidate //' /etc/nginx/conf.d/nginx.conf && /start.sh"
+    ports:
+      - "8081:80"
+    environment:
+      - VITE_EVOLUTION_API_URL=http://api.evolutionapi.home.arpa
+    depends_on:
+      - evolution-api
+    restart: unless-stopped

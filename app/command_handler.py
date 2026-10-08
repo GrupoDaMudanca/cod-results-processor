@@ -111,13 +111,17 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
     elif text.startswith(('/dashboard', '/dash')):
         from dashboard import generate_dashboard_image
         from datetime import datetime
+        import dateparser
+        import calendar
         
-        args = text.strip().split()
         start_date = None
         end_date = None
         
+        # Remove the command prefix
+        param_str = re.sub(r'^/dash(board)?\s*', '', text.strip())
+        
         def parse_date_arg(date_str):
-            import calendar
+            date_str = date_str.strip()
             match_yyyy = re.match(r'^(\d{4})$', date_str)
             if match_yyyy:
                 year = int(match_yyyy.group(1))
@@ -141,15 +145,39 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
                 day, month, year = int(match_dd_mm_yyyy.group(1)), int(match_dd_mm_yyyy.group(2)), int(match_dd_mm_yyyy.group(3))
                 return datetime(year, month, day), datetime(year, month, day, 23, 59, 59)
                 
+            # Fallback to dateparser for NLP
+            parsed = dateparser.parse(date_str, languages=['pt'], settings={'PREFER_DATES_FROM': 'past'})
+            if parsed:
+                return datetime(parsed.year, parsed.month, parsed.day), datetime(parsed.year, parsed.month, parsed.day, 23, 59, 59)
+                
             return None, None
 
-        if len(args) == 2:
-            s_dt, e_dt = parse_date_arg(args[1])
-            if s_dt is None:
-                messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
-                return
-            start_date = s_dt
-            end_date = e_dt
+        if param_str:
+            # Check if it's a range separated by " a ", " ate ", " até ", " e ", " - "
+            range_split = re.split(r'\s+(?:a|até|ate|e|-|until|to)\s+', param_str, maxsplit=1)
+            
+            # If the user literally just typed two dates separated by a space (the AI used to do this)
+            if len(range_split) == 1 and " " in param_str:
+                # If there are exactly two tokens that look like dates
+                tokens = param_str.split()
+                if len(tokens) == 2:
+                    range_split = tokens
+
+            if len(range_split) == 2:
+                s_dt, _ = parse_date_arg(range_split[0])
+                _, e_dt = parse_date_arg(range_split[1])
+                if s_dt is None or e_dt is None:
+                    messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
+                    return
+                start_date = s_dt
+                end_date = e_dt
+            else:
+                s_dt, e_dt = parse_date_arg(param_str)
+                if s_dt is None:
+                    messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")
+                    return
+                start_date = s_dt
+                end_date = e_dt
         elif len(args) >= 3:
             if re.match(r'^(\d{4})$', args[1]) or re.match(r'^(\d{4})$', args[2]):
                 messenger.send_message(get_message(DASHBOARD_INVALID_FORMAT_MESSAGES), reply_to_message=reply_to, msg_type="DASHBOARD_INVALID_FORMAT")

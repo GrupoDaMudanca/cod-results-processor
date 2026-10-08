@@ -124,7 +124,7 @@ class WhatsAppListener(BaseListener):
         # In case a lid arrives (rare in Evolution API v2 for normal upserts)
         return from_id.replace('@lid', '@s.whatsapp.net')
 
-    def _download_whatsapp_media(self, message):
+    def _download_whatsapp_media(self, message) -> bool:
         message_id = (message.get('key') or {}).get('id')
         date = message.get('messageTimestamp')
         
@@ -133,7 +133,7 @@ class WhatsAppListener(BaseListener):
         has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
         
         if not has_media:
-            return
+            return False
             
         logger.info(f"Downloading WhatsApp media for {message_id}")
         
@@ -150,7 +150,7 @@ class WhatsAppListener(BaseListener):
             base64_data = media_data.get('base64')
             if not base64_data:
                 logger.error("No base64 data returned by WhatsApp.")
-                return
+                return False
                 
             # Evolution sometimes returns "data:image/jpeg;base64,..."
             if "," in base64_data:
@@ -166,6 +166,7 @@ class WhatsAppListener(BaseListener):
             remote_jid = (message.get('key') or {}).get('remoteJid')
             participant = (message.get('key') or {}).get('participant')
             save_media_metadata(file_name, str(message_id), date, remote_jid, participant)
+            return True
             
         except Exception as e:
             logger.error(f"Failed to download WhatsApp media: {e}")
@@ -174,9 +175,10 @@ class WhatsAppListener(BaseListener):
                 from app.messages.system import ERROR_UNEXPECTED_MESSAGES
                 import random
                 messenger = get_messenger()
-                messenger.send_message(get_message(ERROR_UNEXPECTED_MESSAGES), reply_to_message_id=str(message_id), msg_type="ERROR")
+                messenger.send_message(get_message(ERROR_UNEXPECTED_MESSAGES), reply_to_message=message, msg_type="ERROR")
             except:
                 pass
+            return False
 
     def poll_and_download(self, timeout: int = 30) -> int:
         elapsed = 0
@@ -283,24 +285,25 @@ class WhatsAppListener(BaseListener):
                 
             has_media = 'imageMessage' in msg_obj or message.get('messageType') == 'imageMessage'
             if has_media:
-                has_photo = True
-                self._download_whatsapp_media(message)
+                success = self._download_whatsapp_media(message)
                 self.last_processed_id = message_id
                 
-                if not processing_msg_sent:
-                    try:
-                        from app.messages.system import PROCESSING_MESSAGES
-                        import random
-                        from app.messengers import get_messenger
-                        messenger = get_messenger()
-                        messenger.send_message(
-                            get_message(PROCESSING_MESSAGES),
-                            reply_to_message=reply_to,
-                            msg_type="SYSTEM_PROCESSING"
-                        )
-                        processing_msg_sent = True
-                    except Exception as e:
-                        logger.error(f"Failed to send processing message: {e}")
+                if success:
+                    has_photo = True
+                    if not processing_msg_sent:
+                        try:
+                            from app.messages.system import PROCESSING_MESSAGES
+                            import random
+                            from app.messengers import get_messenger
+                            messenger = get_messenger()
+                            messenger.send_message(
+                                get_message(PROCESSING_MESSAGES),
+                                reply_to_message=reply_to,
+                                msg_type="SYSTEM_PROCESSING"
+                            )
+                            processing_msg_sent = True
+                        except Exception as e:
+                            logger.error(f"Failed to send processing message: {e}")
 
         if has_photo:
             logger.info("Finished downloading WhatsApp media from batch.")

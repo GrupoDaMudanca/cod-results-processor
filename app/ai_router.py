@@ -32,7 +32,7 @@ YOU MUST RETURN A VALID JSON OBJECT WITH EXACTLY THESE TWO KEYS:
 1. "intent": Must be one of the exact categories above.
 2. "parameters": If the user specified a target (a name to ignore, keywords to search, dates to filter), extract them here. Otherwise, return an empty string.
    - For 'searchcitation', extract keywords.
-   - For 'dashboard' or 'backfill', format dates as DD/MM/YYYY or YYYY/MM. If a date range is requested, you MUST return BOTH dates separated by a space (e.g. '01/01/2026 31/01/2026'). Use the CHEAT SHEET below for relative dates.
+   - For 'dashboard' or 'backfill', extract the EXACT temporal phrase mentioned by the user (e.g. 'semana retrasada', 'janeiro de 2026 até hoje'). Do not calculate or format it.
    - For 'ignore', extract the player's name.
 
 Example Output:
@@ -50,16 +50,9 @@ def route_message_to_command(text: str) -> str:
         - "ERROR_MAPPING" if intent is 'none'
     """
     cleaned_text = text.strip()
-    from datetime import datetime, timedelta
-    today = datetime.now()
-    ontem = (today - timedelta(days=1)).strftime("%d/%m/%Y")
-    semana_passada = (today - timedelta(days=7)).strftime("%d/%m/%Y")
-    semana_retrasada = (today - timedelta(days=14)).strftime("%d/%m/%Y")
-    mes_passado = (today.replace(day=1) - timedelta(days=1)).strftime("%m/%Y")
-    
-    cheat_sheet = f"\nDATE CHEAT SHEET:\n- hoje / today: {today.strftime('%d/%m/%Y')}\n- ontem / yesterday: {ontem}\n- semana passada / last week: {semana_passada}\n- semana retrasada: {semana_retrasada}\n- mes passado / last month: {mes_passado}\n"
-    
-    system_prompt = SYSTEM_PROMPT_TEMPLATE.replace("{current_date}", today.strftime("%d/%m/%Y")) + cheat_sheet
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.replace("{current_date}", current_date)
     
     result = None
     success = False

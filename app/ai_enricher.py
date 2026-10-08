@@ -28,6 +28,13 @@ def get_message(message_list: list, context: str = "") -> str:
         
         examples_text = "\n".join([f"- {msg}" for msg in examples])
         
+        fallback_placeholders = set(re.findall(r'\{([A-Za-z0-9_]+)\}', fallback_message))
+        if fallback_placeholders:
+            placeholder_str = ", ".join([f"{{{p}}}" for p in fallback_placeholders])
+            rule = f"REGRA CRÍTICA: Você DEVE incluir EXATAMENTE estas mesmas chaves na sua nova mensagem: {placeholder_str}. O sistema usará isso para injetar variáveis."
+        else:
+            rule = "REGRA CRÍTICA: NÃO inclua nenhuma variável entre chaves {} na sua resposta."
+
         system_prompt = (
             "Você é o bot do WhatsApp de um clã de Call of Duty. "
             "Sua personalidade é extremamente ácida, irônica, tóxica (na brincadeira) e impaciente.\n\n"
@@ -35,7 +42,7 @@ def get_message(message_list: list, context: str = "") -> str:
             f"{examples_text}\n\n"
             "Sua tarefa: Gere UMA (1) nova mensagem seguindo a exata mesma vibe e tom irônico dos exemplos, mas com texto diferente. "
             "Seja criativo e soe natural para o WhatsApp. "
-            "REGRA CRÍTICA: Se as mensagens de exemplo contiverem palavras entre chaves (como {player_name}, {count}, {days}, etc), VOCÊ DEVE incluir EXATAMENTE as mesmas chaves na sua nova mensagem, pois o sistema usará isso para injetar variáveis. Não altere nem omita essas chaves. "
+            f"{rule} "
             "IMPORTANTE: Retorne APENAS o texto da mensagem final, sem aspas, sem explicações, sem introduções."
         )
         
@@ -95,7 +102,6 @@ def get_message(message_list: list, context: str = "") -> str:
                 enriched_text = enriched_text[1:-1]
                 
             # Safey check: ensure LLM didn't hallucinate placeholders not in the fallback
-            fallback_placeholders = set(re.findall(r'\{([A-Za-z0-9_]+)\}', fallback_message))
             enriched_placeholders = set(re.findall(r'\{([A-Za-z0-9_]+)\}', enriched_text))
             
             if not enriched_placeholders.issubset(fallback_placeholders):
