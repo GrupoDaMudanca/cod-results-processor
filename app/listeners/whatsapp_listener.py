@@ -216,6 +216,13 @@ class WhatsAppListener(BaseListener):
             message_id = (message.get('key') or {}).get('id')
             chat_id = (message.get('key') or {}).get('remoteJid')
             
+            # Ignore private messages and messages outside WHATSAPP_CHAT_ID
+            if not chat_id or not chat_id.endswith('@g.us'):
+                continue
+            from config import WHATSAPP_CHAT_ID
+            if WHATSAPP_CHAT_ID and chat_id != WHATSAPP_CHAT_ID:
+                continue
+            
             # participant holds the actual sender ID in groups
             from_id = (message.get('key') or {}).get('participant') or chat_id
             
@@ -244,7 +251,7 @@ class WhatsAppListener(BaseListener):
             if not mentioned_ids:
                 mentioned_ids = (message.get('contextInfo') or {}).get('mentionedJid', [])
             
-            if any(b_id in mentioned_ids for b_id in self.bot_ids) or (msg_to in mentioned_ids and msg_to.endswith('@s.whatsapp.net')):
+            if any(b_id in mentioned_ids for b_id in self.bot_ids):
                 is_mentioned = True
                 
             if is_mentioned and text.strip():

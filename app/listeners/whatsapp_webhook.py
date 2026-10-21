@@ -35,11 +35,12 @@ class WhatsAppWebhookServer:
                 if not chat_id:
                     continue
                     
-                is_private = not chat_id.endswith('@g.us')
-                
-                if WHATSAPP_CHAT_ID and not is_private:
-                    if chat_id != WHATSAPP_CHAT_ID:
-                        continue
+                # Ignore private messages completely
+                if not chat_id.endswith('@g.us'):
+                    continue
+
+                if WHATSAPP_CHAT_ID and chat_id != WHATSAPP_CHAT_ID:
+                    continue
 
                 self.queue.append(message)
                 msg_id = message.get('key', {}).get('id') or message.get('messageId')
