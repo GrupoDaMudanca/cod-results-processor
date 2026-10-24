@@ -88,7 +88,7 @@ CITATION_SEARCH_EMPTY_MESSAGES = [
     "📉 As ações da sua credibilidade acabaram de despencar. Nenhuma citação encontrada.",
     "🛒 Fui no mercadinho comprar paciência pra lidar com sua memória falha. Nada encontrado.",
     "🌵 Mais seco que o deserto do Saara é o meu resultado pra essa sua busca: vazio absoluto.",
-    "🐒 Até um macaco batendo num teclado tem mais chance de acertar uma citação real. Zero resultados.",
+    "❌ Essa busca passou longe de qualquer pérola registrada. Zero resultados.",
     "🔨 Vou dar uma martelada no meu processador pra ver se entendo sua alucinação. Nada aqui.",
     "🕰️ Viajei no tempo e descobri que... ninguém nunca disse isso. Parabéns pela fanfic.",
     "🌪️ Foi um furacão que levou essa citação? Porque ela não tá salva em lugar nenhum.",

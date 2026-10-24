@@ -122,7 +122,17 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
         
         def parse_date_arg(date_str):
             date_str = date_str.strip()
-            match_yyyy = re.match(r'^(\d{4})$', date_str)
+            
+            # Check for "ano todo", "desse ano", "deste ano", "ano atual", etc.
+            if re.search(r'\b(ano\s+todo|todo\s+o\s+ano|desse\s+ano|deste\s+ano|ano\s+atual)\b', date_str, flags=re.I):
+                now_dt = datetime.now()
+                return datetime(now_dt.year, 1, 1), datetime(now_dt.year, now_dt.month, calendar.monthrange(now_dt.year, now_dt.month)[1], 23, 59, 59)
+
+            # Strip leading prepositions/fillers like "de 2026", "do ano 2026", "ano de 2026", "em 2026"
+            date_str = re.sub(r'^(?:do\s+ano\s+de|ano\s+de|do\s+ano|de|do|da|em|para|pra)\s+', '', date_str, flags=re.I).strip()
+
+            # Check for year like "2026", "2026 todo", "ano 2026", "ano todo de 2026"
+            match_yyyy = re.match(r'^(?:ano\s+todo\s+de\s+|todo\s+o\s+ano\s+de\s+|ano\s+)?(\d{4})(?:\s+todo)?$', date_str, flags=re.I)
             if match_yyyy:
                 year = int(match_yyyy.group(1))
                 now_dt = datetime.now()
@@ -130,6 +140,21 @@ def handle_command(text: str, reply_to: dict, from_id: str, chat_id: str, is_adm
                     return datetime(year, 1, 1), datetime(year, now_dt.month, calendar.monthrange(year, now_dt.month)[1], 23, 59, 59)
                 return datetime(year, 1, 1), datetime(year, 12, 31, 23, 59, 59)
                 
+            # Named months like "setembro", "setembro de 2026", "outubro 2026"
+            month_names = {
+                'janeiro': 1, 'fevereiro': 2, 'marco': 3, 'março': 3, 'abril': 4,
+                'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9,
+                'outubro': 10, 'novembro': 11, 'dezembro': 12
+            }
+            month_regex = r'^(?:mes\s+de\s+|mês\s+de\s+)?(' + '|'.join(month_names.keys()) + r')(?:\s+(?:de\s+)?(\d{4}))?$'
+            match_named_month = re.match(month_regex, date_str, flags=re.I)
+            if match_named_month:
+                m_name = match_named_month.group(1).lower()
+                month = month_names[m_name]
+                year = int(match_named_month.group(2)) if match_named_month.group(2) else datetime.now().year
+                last_day = calendar.monthrange(year, month)[1]
+                return datetime(year, month, 1), datetime(year, month, last_day, 23, 59, 59)
+
             match1 = re.match(r'^(\d{4})/(\d{2})$', date_str)
             match2 = re.match(r'^(\d{2})/(\d{4})$', date_str)
             if match1 or match2:
